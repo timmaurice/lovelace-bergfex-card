@@ -1,0 +1,38 @@
+{
+  "editor": {
+    "groups": {
+      "core": "Core Configuration",
+      "display": "Display"
+    },
+    "title": "Title (Optional)",
+    "resorts": "Resort Entities",
+    "show_snow": "Show Snow Information",
+    "show_lifts": "Show Lift Information",
+    "show_last_updated": "Show Last Updated Timestamp",
+    "hide_closed_resorts": "Hide Closed Resorts",
+    "show_link": "Show link to detail page",
+    "sort_by": "Sort by",
+    "sort_by_options": {
+      "mountain": "Snow (Mountain)",
+      "valley": "Snow (Valley)",
+      "new": "New Snow",
+      "lift": "Lifts Open",
+      "update": "Last Update"
+    }
+  },
+  "card": {
+    "resort_not_found": "Resort not found: {resort}",
+    "lifts_open": "Lifts",
+    "header": {
+      "snow_mountain": "Mountain",
+      "snow_valley": "Valley",
+      "new_snow": "New",
+      "link_title": "Open {resortName} detail page on bergfex"
+    }
+  },
+  "common": {
+    "errors": {
+      "no_resorts": "You need to define at least one resort entity."
+    }
+  }
+}

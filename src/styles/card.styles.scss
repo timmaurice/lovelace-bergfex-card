@@ -1,0 +1,115 @@
+:host ::slotted(.card-content),
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.resort {
+  border: 1px solid var(--divider-color);
+  border-radius: var(--ha-card-border-radius, 12px);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(var(--rgb-primary-text-color), 0.05);
+  }
+}
+
+.resort-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.resort-name {
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+.resort-status {
+  background-color: var(--divider-color);
+  border-radius: 4px;
+  color: var(--primary-text-color);
+  font-size: 0.9em;
+  font-weight: 500;
+  padding: 2px 6px;
+  text-transform: uppercase;
+
+  &.open {
+    background-color: var(--label-badge-green);
+  }
+
+  &.closed {
+    background-color: var(--label-badge-red);
+  }
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.detail-item {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+}
+
+.detail-item ha-icon {
+  --mdc-icon-size: 28px;
+  color: var(--secondary-text-color);
+}
+
+.detail-item svg {
+  height: var(--mdc-icon-size, 24px);
+  stroke: var(--secondary-text-color);
+  width: var(--mdc-icon-size, 24px);
+}
+
+.detail-item-value {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.1em;
+}
+
+.detail-item-label {
+  color: var(--secondary-text-color);
+  font-size: 0.8em;
+}
+
+.resort-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link-icon {
+  color: var(--secondary-text-color);
+  display: flex;
+  text-decoration: none;
+}
+
+.last-updated {
+  align-items: center;
+  color: var(--secondary-text-color);
+  cursor: pointer;
+  display: flex;
+  font-size: 0.8em;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.warning {
+  color: var(--error-color);
+}
