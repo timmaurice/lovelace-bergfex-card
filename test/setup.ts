@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, type Mock } from 'vitest';
 import type { LovelaceCard } from '../src/types';
 // Mock ResizeObserver for the JSDOM environment
 const ResizeObserverMock = vi.fn(() => ({
@@ -14,7 +14,7 @@ if (typeof window !== 'undefined') {
 
 // Mock for Home Assistant helpers
 interface TestWindow extends Window {
-  loadCardHelpers: ReturnType<typeof vi.fn>;
+  loadCardHelpers: Mock;
 }
 
 const testWindow = window as unknown as TestWindow;
