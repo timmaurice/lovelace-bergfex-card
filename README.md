@@ -7,7 +7,7 @@
 [![GH-code-size](https://img.shields.io/github/languages/code-size/timmaurice/lovelace-bergfex-card.svg?style=flat-square)](https://github.com/timmaurice/lovelace-bergfex-card)
 ![GitHub](https://img.shields.io/github/license/timmaurice/lovelace-bergfex-card?style=flat-square)
 
-A custom Lovelace card for Home Assistant to display ski resort conditions from the [Bergfex integration](https://www.home-assistant.io/integrations/bergfex/).
+A custom Lovelace card for Home Assistant to display ski resort conditions from the [Bergfex integration](https://github.com/timmaurice/bergfex).
 
 <img src="https://raw.githubusercontent.com/timmaurice/lovelace-bergfex-card/main/image.png" alt="Card Screenshot" />
 
