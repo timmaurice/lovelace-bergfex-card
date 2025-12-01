@@ -78,4 +78,9 @@ export interface BergfexCardConfig extends LovelaceCardConfig {
   hide_closed_resorts?: boolean;
   sort_by?: 'mountain' | 'valley' | 'new' | 'lift' | 'update' | 'none';
   show_link?: boolean;
+  show_conditions?: boolean;
+  show_avalanche?: boolean;
+  show_slopes?: boolean;
+  show_last_snowfall?: boolean;
+  show_elevation?: boolean;
 }

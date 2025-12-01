@@ -153,7 +153,7 @@ describe('BergfexCard', () => {
         lifts_total: '45',
       };
       const resort = createMockResort('ischgl', 'Ischgl', resortData);
-      await setupCard({}, resort);
+      await setupCard({ show_elevation: false }, resort);
 
       const resortEl = element.shadowRoot?.querySelector('.resort');
       expect(resortEl).not.toBeNull();
@@ -162,10 +162,11 @@ describe('BergfexCard', () => {
       expect(resortEl?.querySelector('.resort-status')?.textContent).toBe('Open');
 
       const detailItems = resortEl?.querySelectorAll('.detail-item');
-      expect(detailItems?.[0].textContent).toContain('150 cm'); // snow mountain
-      expect(detailItems?.[1].textContent).toContain('30 cm'); // snow valley
-      expect(detailItems?.[2].textContent).toContain('10 cm'); // new snow
-      expect(detailItems?.[3].textContent).toContain('40/45'); // lifts
+      // Normalize whitespace for more reliable matching
+      expect(detailItems?.[0].textContent?.replace(/\s+/g, ' ').trim()).toContain('150 cm'); // snow mountain
+      expect(detailItems?.[1].textContent?.replace(/\s+/g, ' ').trim()).toContain('30 cm'); // snow valley
+      expect(detailItems?.[2].textContent?.replace(/\s+/g, ' ').trim()).toContain('10 cm'); // new snow
+      expect(detailItems?.[3].textContent?.replace(/\s+/g, ' ').trim()).toContain('40/45'); // lifts
     });
   });
 

@@ -31,6 +31,11 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
       show_last_updated: true,
       hide_closed_resorts: false,
       show_link: true,
+      show_conditions: true,
+      show_avalanche: true,
+      show_slopes: true,
+      show_last_snowfall: true,
+      show_elevation: true,
       ...config,
     };
   }
@@ -65,6 +70,26 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
       },
       {
         name: 'show_link',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_conditions',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_avalanche',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_slopes',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_last_snowfall',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_elevation',
         selector: { boolean: {} },
       },
       {

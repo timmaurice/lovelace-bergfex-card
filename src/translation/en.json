@@ -11,6 +11,11 @@
     "show_last_updated": "Show Last Updated Timestamp",
     "hide_closed_resorts": "Hide Closed Resorts",
     "show_link": "Show link to detail page",
+    "show_conditions": "Show Snow & Slope Conditions",
+    "show_avalanche": "Show Avalanche Warning",
+    "show_slopes": "Show Slope Statistics",
+    "show_last_snowfall": "Show Last Snowfall",
+    "show_elevation": "Show Elevation Data",
     "sort_by": "Sort by",
     "sort_by_options": {
       "mountain": "Snow (Mountain)",
@@ -27,6 +32,14 @@
       "snow_mountain": "Mountain",
       "snow_valley": "Valley",
       "new_snow": "New",
+      "snow_condition": "Snow Condition",
+      "slope_condition": "Slope Condition",
+      "avalanche_warning": "Avalanche Warning",
+      "last_snowfall": "Last Snowfall",
+      "slopes_info": "Slopes",
+      "slopes_open_km": "Open",
+      "slopes_total_km": "Total",
+      "elevation": "Elevation",
       "link_title": "Open {resortName} detail page on bergfex"
     }
   },
