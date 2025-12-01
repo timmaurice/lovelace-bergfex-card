@@ -73,7 +73,6 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       show_conditions: true,
       show_avalanche: true,
       show_slopes: true,
-      show_elevation: true,
       ...config,
     };
   }
