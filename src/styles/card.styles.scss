@@ -51,11 +51,10 @@
 }
 
 .details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: space-between;
-  padding-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 12px;
 }
 
 .detail-item {
@@ -81,6 +80,7 @@
   display: flex;
   flex-direction: column;
   font-size: 1.1em;
+  width: 100%;
 }
 
 .detail-item-label {
@@ -112,4 +112,139 @@
 
 .warning {
   color: var(--error-color);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background-color: var(--divider-color);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+  transition: width 0.3s ease-in-out;
+}
+
+.accordion-container {
+  margin-top: 12px;
+  border-top: 1px solid var(--divider-color);
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--primary-text-color);
+
+  &:hover {
+    background-color: rgba(var(--rgb-primary-text-color), 0.02);
+  }
+}
+
+.accordion-content {
+  padding-bottom: 12px;
+
+  &.details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.forecast-container {
+  margin-top: 16px;
+  border-top: 1px solid var(--divider-color);
+  padding-top: 12px;
+}
+
+.forecast-tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.forecast-tab {
+  cursor: pointer;
+  padding: 8px 12px;
+  font-weight: 500;
+  color: var(--secondary-text-color);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--primary-text-color);
+  }
+
+  &.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+  }
+}
+
+.forecast-carousel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.forecast-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forecast-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.carousel-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary-text-color);
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(var(--rgb-primary-text-color), 0.1);
+  }
+
+  &:disabled {
+    color: var(--disabled-text-color);
+    cursor: not-allowed;
+  }
+}
+
+.carousel-label {
+  font-weight: 500;
+  font-size: 1.1em;
 }

@@ -70,17 +70,15 @@ export interface LovelaceCardEditor extends HTMLElement {
 export type ResortConfig = string | { device: string; name?: string };
 
 export interface BergfexCardConfig extends LovelaceCardConfig {
-  title?: string;
-  resorts: ResortConfig[];
-  show_snow?: boolean;
-  show_lifts?: boolean;
-  show_last_updated?: boolean;
   hide_closed_resorts?: boolean;
-  sort_by?: 'mountain' | 'valley' | 'new' | 'lift' | 'update' | 'none';
-  show_link?: boolean;
+  resorts: ResortConfig[];
   show_conditions?: boolean;
-  show_avalanche?: boolean;
-  show_slopes?: boolean;
+  show_forecast?: boolean;
   show_last_snowfall?: boolean;
-  show_elevation?: boolean;
+  show_last_updated?: boolean;
+  show_lifts_slopes?: boolean;
+  show_link?: boolean;
+  show_snow?: boolean;
+  sort_by?: string;
+  title?: string;
 }

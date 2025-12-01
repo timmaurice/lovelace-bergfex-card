@@ -31,6 +31,8 @@ interface Resort {
   slopes_open?: string;
   slopes_total?: string;
   slope_condition?: string;
+  forecast_days?: string[];
+  forecast_summaries?: string[];
 }
 
 type LovelaceCardConstructor = new () => LovelaceCard;
@@ -55,6 +57,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @query('ha-card') private _card!: LovelaceCard;
   @state() private _config!: BergfexCardConfig;
+  @state() private _forecastState: Record<string, { tab: 'daily' | 'summary'; index: number }> = {};
+  @state() private _accordionState: Record<string, 'conditions' | 'forecast' | null> = {};
 
   public setConfig(config: BergfexCardConfig): void {
     if (!config || !config.resorts || !Array.isArray(config.resorts) || config.resorts.length === 0) {
@@ -114,7 +118,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       const customName = typeof resort === 'object' ? resort.name : undefined;
 
       const deviceEntities = allEntities.filter(
-        (entity) => hass.entities[entity.entity_id]?.device_id === deviceId && entity.entity_id.startsWith('sensor.'),
+        (entity) =>
+          hass.entities[entity.entity_id]?.device_id === deviceId &&
+          (entity.entity_id.startsWith('sensor.') || entity.entity_id.startsWith('image.')),
       );
 
       if (deviceEntities.length === 0) {
@@ -123,7 +129,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
       // Use the device_id as the unique key for the resort.
       if (!resorts[deviceId]) {
-        resorts[deviceId] = {};
+        resorts[deviceId] = {
+          forecast_days: [],
+          forecast_summaries: [],
+        };
       }
 
       if (customName) {
@@ -147,7 +156,63 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         if (entityId.endsWith('_slopes_open')) resorts[deviceId].slopes_open = entityId;
         if (entityId.endsWith('_slopes_total')) resorts[deviceId].slopes_total = entityId;
         if (entityId.endsWith('_slope_condition')) resorts[deviceId].slope_condition = entityId;
+
+        if (entityId.includes('_snow_forecast_day_')) {
+          resorts[deviceId].forecast_days?.push(entityId);
+        }
+        if (entityId.includes('_snow_forecast_summary_')) {
+          resorts[deviceId].forecast_summaries?.push(entityId);
+        }
       });
+
+      // Sort forecast arrays
+      resorts[deviceId].forecast_days?.sort();
+      resorts[deviceId].forecast_summaries?.sort((a, b) => {
+        // Sort by hour number in the entity ID (e.g., ...summary_48h, ...summary_72h)
+        const getHour = (id: string) => {
+          const match = id.match(/summary_(\d+)h/);
+          return match ? parseInt(match[1], 10) : 0;
+        };
+        return getHour(a) - getHour(b);
+      });
+
+      // Fallback: If no forecast images found via device ID, try to find them by pattern matching
+      if (
+        (!resorts[deviceId].forecast_days || resorts[deviceId].forecast_days.length === 0) &&
+        (!resorts[deviceId].forecast_summaries || resorts[deviceId].forecast_summaries.length === 0)
+      ) {
+        // Construct a search pattern based on the resort name or ID if possible.
+        // Since we don't have the slug readily available, we can try to match the pattern of other entities.
+        // Example entity: sensor.resort_slug_status -> image.resort_slug_snow_forecast_day_0
+        const statusEntity = resorts[deviceId].status;
+        if (statusEntity) {
+          const slugMatch = statusEntity.match(/^sensor\.(.+)_status$/);
+          if (slugMatch) {
+            const slug = slugMatch[1];
+            const forecastPattern = `image.${slug}_snow_forecast`;
+
+            allEntities.forEach((entity) => {
+              if (entity.entity_id.startsWith(forecastPattern)) {
+                if (entity.entity_id.includes('_day_')) {
+                  resorts[deviceId].forecast_days?.push(entity.entity_id);
+                } else if (entity.entity_id.includes('_summary_')) {
+                  resorts[deviceId].forecast_summaries?.push(entity.entity_id);
+                }
+              }
+            });
+
+            // Sort again after fallback
+            resorts[deviceId].forecast_days?.sort();
+            resorts[deviceId].forecast_summaries?.sort((a, b) => {
+              const getHour = (id: string) => {
+                const match = id.match(/summary_(\d+)h/);
+                return match ? parseInt(match[1], 10) : 0;
+              };
+              return getHour(a) - getHour(b);
+            });
+          }
+        }
+      }
     });
 
     return resorts;
@@ -171,6 +236,70 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
   private _handleMoreInfo(entityId: string): void {
     fireEvent(this, 'hass-more-info', { entityId });
+  }
+
+  private _handleTabChange(resortId: string, tab: 'daily' | 'summary', e: Event): void {
+    e.stopPropagation();
+    this._forecastState = {
+      ...this._forecastState,
+      [resortId]: {
+        ...this._forecastState[resortId],
+        tab,
+        index: 0, // Reset index when switching tabs
+      },
+    };
+  }
+
+  private _handleCarouselChange(resortId: string, direction: 'prev' | 'next', length: number, e: Event): void {
+    e.stopPropagation();
+    const currentState = this._forecastState[resortId] || { tab: 'daily', index: 0 };
+    let newIndex = currentState.index + (direction === 'next' ? 1 : -1);
+
+    if (newIndex < 0) newIndex = length - 1;
+    if (newIndex >= length) newIndex = 0;
+
+    this._forecastState = {
+      ...this._forecastState,
+      [resortId]: {
+        ...currentState,
+        index: newIndex,
+      },
+    };
+  }
+
+  private _toggleAccordion(resortId: string, section: 'conditions' | 'forecast', e: Event): void {
+    e.stopPropagation();
+    this._accordionState = {
+      ...this._accordionState,
+      [resortId]: this._accordionState[resortId] === section ? null : section,
+    };
+  }
+
+  private _formatForecastDate(dayOffset: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() + dayOffset);
+
+    if (dayOffset === 0) {
+      return localize(this.hass, 'component.bergfex-card.card.forecast.today');
+    } else if (dayOffset === 1) {
+      return localize(this.hass, 'component.bergfex-card.card.forecast.tomorrow');
+    } else {
+      // Format as "Mo., 02.12." for German or "Mon, 02.12" for English
+      const locale = this.hass.locale?.language || this.hass.language || 'de';
+      const weekday = date.toLocaleDateString(locale, { weekday: 'short' });
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `${weekday}, ${day}.${month}.`;
+    }
+  }
+
+  private _renderProgressBar(value: number, total: number): TemplateResult {
+    const percentage = Math.min(100, Math.max(0, (value / total) * 100));
+    return html`
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+      </div>
+    `;
   }
 
   protected render(): TemplateResult {
@@ -296,15 +425,14 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           <div class="detail-item-value">
                             ${snow_mountain && !isNaN(parseFloat(snow_mountain.state))
                               ? html`<span
-                                  >${snow_mountain.state}
-                                  ${snow_mountain.attributes.unit_of_measurement ?? ''}${this._config.show_elevation &&
-                                  snow_mountain.attributes.elevation
-                                    ? html` <span class="elevation">(${snow_mountain.attributes.elevation}m)</span>`
-                                    : ''}</span
+                                  >${snow_mountain.state} ${snow_mountain.attributes.unit_of_measurement ?? ''}</span
                                 >`
                               : html`<span>N/A</span>`}
                             <span class="detail-item-label"
-                              >${localize(this.hass, 'component.bergfex-card.card.header.snow_mountain')}</span
+                              >${localize(this.hass, 'component.bergfex-card.card.header.snow_mountain')}
+                              ${snow_mountain?.attributes.elevation
+                                ? `(${snow_mountain.attributes.elevation}m)`
+                                : ''}</span
                             >
                           </div>
                         </div>
@@ -321,15 +449,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           <div class="detail-item-value">
                             ${snow_valley && !isNaN(parseFloat(snow_valley.state))
                               ? html`<span
-                                  >${snow_valley.state}
-                                  ${snow_valley.attributes.unit_of_measurement ?? ''}${this._config.show_elevation &&
-                                  snow_valley.attributes.elevation
-                                    ? html` <span class="elevation">(${snow_valley.attributes.elevation}m)</span>`
-                                    : ''}</span
+                                  >${snow_valley.state} ${snow_valley.attributes.unit_of_measurement ?? ''}</span
                                 >`
                               : html`<span>N/A</span>`}
                             <span class="detail-item-label"
-                              >${localize(this.hass, 'component.bergfex-card.card.header.snow_valley')}</span
+                              >${localize(this.hass, 'component.bergfex-card.card.header.snow_valley')}
+                              ${snow_valley?.attributes.elevation ? `(${snow_valley.attributes.elevation}m)` : ''}</span
                             >
                           </div>
                         </div>
@@ -354,7 +479,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                         </div>
                       `
                     : ''}
-                  ${this._config.show_lifts
+                  ${this._config.show_lifts_slopes
                     ? html`
                         <div
                           class="detail-item"
@@ -371,7 +496,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                             lifts_total &&
                             !isNaN(parseFloat(lifts_open.state)) &&
                             !isNaN(parseFloat(lifts_total.state))
-                              ? html`<span>${lifts_open.state}/${lifts_total.state}</span>`
+                              ? html`<span>${lifts_open.state}/${lifts_total.state}</span> ${this._renderProgressBar(
+                                    parseFloat(lifts_open.state),
+                                    parseFloat(lifts_total.state),
+                                  )}`
                               : html`<span>N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.lifts_open')}</span
@@ -380,95 +508,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                         </div>
                       `
                     : ''}
-                  ${this._config.show_conditions && (snow_condition || slope_condition)
-                    ? html`
-                        ${snow_condition
-                          ? html`
-                              <div
-                                class="detail-item"
-                                @click=${(e: Event) => {
-                                  e.stopPropagation();
-                                  if (snow_condition) {
-                                    this._handleMoreInfo(snow_condition.entity_id);
-                                  }
-                                }}
-                              >
-                                <ha-icon icon="mdi:weather-snowy"></ha-icon>
-                                <div class="detail-item-value">
-                                  <span>${snow_condition.state ?? 'N/A'}</span>
-                                  <span class="detail-item-label"
-                                    >${localize(this.hass, 'component.bergfex-card.card.header.snow_condition')}</span
-                                  >
-                                </div>
-                              </div>
-                            `
-                          : ''}
-                        ${slope_condition
-                          ? html`
-                              <div
-                                class="detail-item"
-                                @click=${(e: Event) => {
-                                  e.stopPropagation();
-                                  if (slope_condition) {
-                                    this._handleMoreInfo(slope_condition.entity_id);
-                                  }
-                                }}
-                              >
-                                <ha-icon icon="mdi:ski"></ha-icon>
-                                <div class="detail-item-value">
-                                  <span>${slope_condition.state ?? 'N/A'}</span>
-                                  <span class="detail-item-label"
-                                    >${localize(this.hass, 'component.bergfex-card.card.header.slope_condition')}</span
-                                  >
-                                </div>
-                              </div>
-                            `
-                          : ''}
-                      `
-                    : ''}
-                  ${this._config.show_avalanche && avalanche_warning
-                    ? html`
-                        <div
-                          class="detail-item"
-                          @click=${(e: Event) => {
-                            e.stopPropagation();
-                            if (avalanche_warning) {
-                              this._handleMoreInfo(avalanche_warning.entity_id);
-                            }
-                          }}
-                        >
-                          <ha-icon icon="mdi:alert"></ha-icon>
-                          <div class="detail-item-value">
-                            <span>${avalanche_warning.state ?? 'N/A'}</span>
-                            <span class="detail-item-label"
-                              >${localize(this.hass, 'component.bergfex-card.card.header.avalanche_warning')}</span
-                            >
-                          </div>
-                        </div>
-                      `
-                    : ''}
-                  ${this._config.show_last_snowfall && last_snowfall
-                    ? html`
-                        <div
-                          class="detail-item"
-                          @click=${(e: Event) => {
-                            e.stopPropagation();
-                            if (last_snowfall) {
-                              this._handleMoreInfo(last_snowfall.entity_id);
-                            }
-                          }}
-                        >
-                          <ha-icon icon="mdi:calendar-snowflake"></ha-icon>
-                          <div class="detail-item-value">
-                            <span>${last_snowfall.state ?? 'N/A'}</span>
-                            <span class="detail-item-label"
-                              >${localize(this.hass, 'component.bergfex-card.card.header.last_snowfall')}</span
-                            >
-                          </div>
-                        </div>
-                      `
-                    : ''}
-                  ${this._config.show_slopes && (slopes_open_km || slopes_total_km || slopes_open || slopes_total)
+                  ${this._config.show_lifts_slopes && (slopes_open_km || slopes_total_km || slopes_open || slopes_total)
                     ? html`
                         ${slopes_open_km && slopes_total_km
                           ? html`
@@ -488,9 +528,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   !isNaN(parseFloat(slopes_open_km.state)) &&
                                   !isNaN(parseFloat(slopes_total_km.state))
                                     ? html`<span
-                                        >${slopes_open_km.state}/${slopes_total_km.state}
-                                        ${slopes_open_km.attributes.unit_of_measurement ?? 'km'}</span
-                                      >`
+                                          >${slopes_open_km.state}/${slopes_total_km.state}
+                                          ${slopes_open_km.attributes.unit_of_measurement ?? 'km'}</span
+                                        >
+                                        ${this._renderProgressBar(
+                                          parseFloat(slopes_open_km.state),
+                                          parseFloat(slopes_total_km.state),
+                                        )}`
                                     : html`<span>N/A</span>`}
                                   <span class="detail-item-label"
                                     >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}</span
@@ -516,7 +560,11 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   slopes_total &&
                                   !isNaN(parseFloat(slopes_open.state)) &&
                                   !isNaN(parseFloat(slopes_total.state))
-                                    ? html`<span>${slopes_open.state}/${slopes_total.state}</span>`
+                                    ? html`<span>${slopes_open.state}/${slopes_total.state}</span>
+                                        ${this._renderProgressBar(
+                                          parseFloat(slopes_open.state),
+                                          parseFloat(slopes_total.state),
+                                        )}`
                                     : html`<span>N/A</span>`}
                                   <span class="detail-item-label"
                                     >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}
@@ -529,6 +577,264 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                       `
                     : ''}
                 </div>
+
+                ${(this._config.show_conditions && (snow_condition || slope_condition || avalanche_warning)) ||
+                (this._config.show_last_snowfall && last_snowfall)
+                  ? html`
+                      <div class="accordion-container">
+                        <div
+                          class="accordion-header"
+                          @click=${(e: Event) => this._toggleAccordion(resortId, 'conditions', e)}
+                        >
+                          <span>${localize(this.hass, 'component.bergfex-card.card.accordion.conditions')}</span>
+                          <ha-icon
+                            icon=${this._accordionState[resortId] === 'conditions'
+                              ? 'mdi:chevron-up'
+                              : 'mdi:chevron-down'}
+                          ></ha-icon>
+                        </div>
+                        ${this._accordionState[resortId] === 'conditions'
+                          ? html`
+                              <div class="accordion-content details">
+                                ${this._config.show_conditions && (snow_condition || slope_condition)
+                                  ? html`
+                                      ${snow_condition
+                                        ? html`
+                                            <div
+                                              class="detail-item"
+                                              @click=${(e: Event) => {
+                                                e.stopPropagation();
+                                                if (snow_condition) {
+                                                  this._handleMoreInfo(snow_condition.entity_id);
+                                                }
+                                              }}
+                                            >
+                                              <ha-icon icon="mdi:weather-snowy"></ha-icon>
+                                              <div class="detail-item-value">
+                                                <span>${snow_condition.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${localize(
+                                                    this.hass,
+                                                    'component.bergfex-card.card.header.snow_condition',
+                                                  )}</span
+                                                >
+                                              </div>
+                                            </div>
+                                          `
+                                        : ''}
+                                      ${slope_condition
+                                        ? html`
+                                            <div
+                                              class="detail-item"
+                                              @click=${(e: Event) => {
+                                                e.stopPropagation();
+                                                if (slope_condition) {
+                                                  this._handleMoreInfo(slope_condition.entity_id);
+                                                }
+                                              }}
+                                            >
+                                              <ha-icon icon="mdi:ski"></ha-icon>
+                                              <div class="detail-item-value">
+                                                <span>${slope_condition.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${localize(
+                                                    this.hass,
+                                                    'component.bergfex-card.card.header.slope_condition',
+                                                  )}</span
+                                                >
+                                              </div>
+                                            </div>
+                                          `
+                                        : ''}
+                                    `
+                                  : ''}
+                                ${this._config.show_conditions && avalanche_warning
+                                  ? html`
+                                      <div
+                                        class="detail-item"
+                                        @click=${(e: Event) => {
+                                          e.stopPropagation();
+                                          if (avalanche_warning) {
+                                            this._handleMoreInfo(avalanche_warning.entity_id);
+                                          }
+                                        }}
+                                      >
+                                        <ha-icon icon="mdi:alert"></ha-icon>
+                                        <div class="detail-item-value">
+                                          <span>${avalanche_warning.state}</span>
+                                          <span class="detail-item-label"
+                                            >${localize(
+                                              this.hass,
+                                              'component.bergfex-card.card.header.avalanche_warning',
+                                            )}</span
+                                          >
+                                        </div>
+                                      </div>
+                                    `
+                                  : ''}
+                                ${this._config.show_last_snowfall && last_snowfall
+                                  ? html`
+                                      <div
+                                        class="detail-item"
+                                        @click=${(e: Event) => {
+                                          e.stopPropagation();
+                                          if (last_snowfall) {
+                                            this._handleMoreInfo(last_snowfall.entity_id);
+                                          }
+                                        }}
+                                      >
+                                        <ha-icon icon="mdi:calendar-snowflake"></ha-icon>
+                                        <div class="detail-item-value">
+                                          <span>${last_snowfall.state}</span>
+                                          <span class="detail-item-label"
+                                            >${localize(
+                                              this.hass,
+                                              'component.bergfex-card.card.header.last_snowfall',
+                                            )}</span
+                                          >
+                                        </div>
+                                      </div>
+                                    `
+                                  : ''}
+                              </div>
+                            `
+                          : ''}
+                      </div>
+                    `
+                  : ''}
+                ${(() => {
+                  // Only show forecast if enabled and we have valid images
+                  if (!this._config.show_forecast) return '';
+
+                  const hasDailyImages =
+                    resort.forecast_days &&
+                    resort.forecast_days.length > 0 &&
+                    resort.forecast_days.some((id) => {
+                      const entity = this.hass.states[id];
+                      return entity && entity.attributes.entity_picture;
+                    });
+
+                  const hasSummaryImages =
+                    resort.forecast_summaries &&
+                    resort.forecast_summaries.length > 0 &&
+                    resort.forecast_summaries.some((id) => {
+                      const entity = this.hass.states[id];
+                      return entity && entity.attributes.entity_picture;
+                    });
+
+                  if (!hasDailyImages && !hasSummaryImages) return '';
+
+                  return html`
+                    <div class="accordion-container">
+                      <div
+                        class="accordion-header"
+                        @click=${(e: Event) => this._toggleAccordion(resortId, 'forecast', e)}
+                      >
+                        <span>${localize(this.hass, 'component.bergfex-card.card.accordion.forecast')}</span>
+                        <ha-icon
+                          icon=${this._accordionState[resortId] === 'forecast' ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+                        ></ha-icon>
+                      </div>
+                      ${this._accordionState[resortId] === 'forecast'
+                        ? html`
+                            <div class="forecast-container">
+                              <div class="forecast-tabs">
+                                ${hasDailyImages
+                                  ? html`
+                                      <div
+                                        class="forecast-tab ${!this._forecastState[resortId] ||
+                                        this._forecastState[resortId].tab === 'daily'
+                                          ? 'active'
+                                          : ''}"
+                                        @click=${(e: Event) => this._handleTabChange(resortId, 'daily', e)}
+                                      >
+                                        ${localize(this.hass, 'component.bergfex-card.card.forecast.daily')}
+                                      </div>
+                                    `
+                                  : ''}
+                                ${hasSummaryImages
+                                  ? html`
+                                      <div
+                                        class="forecast-tab ${this._forecastState[resortId]?.tab === 'summary'
+                                          ? 'active'
+                                          : ''}"
+                                        @click=${(e: Event) => this._handleTabChange(resortId, 'summary', e)}
+                                      >
+                                        ${localize(this.hass, 'component.bergfex-card.card.forecast.summary')}
+                                      </div>
+                                    `
+                                  : ''}
+                              </div>
+
+                              <div class="forecast-carousel">
+                                ${(() => {
+                                  const activeTab = this._forecastState[resortId]?.tab || 'daily';
+                                  const images =
+                                    activeTab === 'daily' ? resort.forecast_days : resort.forecast_summaries;
+                                  const currentIndex = this._forecastState[resortId]?.index || 0;
+
+                                  if (!images || images.length === 0) return html``;
+
+                                  const currentImageEntityId = images[currentIndex];
+                                  const currentImageEntity = this.hass.states[currentImageEntityId];
+                                  const imageUrl = currentImageEntity?.attributes.entity_picture;
+
+                                  // Extract label based on entity ID or index
+                                  let label = '';
+                                  if (activeTab === 'daily') {
+                                    const dayMatch = currentImageEntityId.match(/day_(\d+)/);
+                                    const dayOffset = dayMatch ? parseInt(dayMatch[1], 10) : currentIndex;
+                                    label = this._formatForecastDate(dayOffset);
+                                  } else {
+                                    const hourMatch = currentImageEntityId.match(/summary_(\d+)h/);
+                                    const hours = hourMatch ? hourMatch[1] : '';
+                                    label = localize(this.hass, 'component.bergfex-card.card.forecast.hour', { hours });
+                                  }
+
+                                  return html`
+                                    <div class="forecast-image-container">
+                                      ${imageUrl
+                                        ? html`<img
+                                            src="${imageUrl}"
+                                            class="forecast-image"
+                                            alt="${label}"
+                                            @click=${(e: Event) => {
+                                              e.stopPropagation();
+                                              this._handleMoreInfo(currentImageEntityId);
+                                            }}
+                                            style="cursor: pointer;"
+                                          />`
+                                        : html`<span>Image not available</span>`}
+                                    </div>
+                                    <div class="carousel-controls">
+                                      <button
+                                        class="carousel-btn"
+                                        @click=${(e: Event) =>
+                                          this._handleCarouselChange(resortId, 'prev', images.length, e)}
+                                        ?disabled=${images.length <= 1}
+                                      >
+                                        <ha-icon icon="mdi:chevron-left"></ha-icon>
+                                      </button>
+                                      <span class="carousel-label">${label}</span>
+                                      <button
+                                        class="carousel-btn"
+                                        @click=${(e: Event) =>
+                                          this._handleCarouselChange(resortId, 'next', images.length, e)}
+                                        ?disabled=${images.length <= 1}
+                                      >
+                                        <ha-icon icon="mdi:chevron-right"></ha-icon>
+                                      </button>
+                                    </div>
+                                  `;
+                                })()}
+                              </div>
+                            </div>
+                          `
+                        : ''}
+                    </div>
+                  `;
+                })()}
+
                 <div class="resort-footer">
                   ${this._config.show_link && link
                     ? html`

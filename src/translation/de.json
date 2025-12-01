@@ -7,15 +7,13 @@
     "title": "Titel (Optional)",
     "resorts": "Skigebiete",
     "show_snow": "Schneeinformationen anzeigen",
-    "show_lifts": "Liftinformationen anzeigen",
-    "show_last_updated": "Zeitstempel der letzten Aktualisierung anzeigen",
-    "hide_closed_resorts": "Geschlossene Skigebiete ausblenden",
-    "show_link": "Link zur Detailseite anzeigen",
-    "show_conditions": "Schnee- & Pistenzustand anzeigen",
-    "show_avalanche": "Lawinenwarnstufe anzeigen",
-    "show_slopes": "Pistenstatistiken anzeigen",
+    "show_lifts_slopes": "Lift- & Pistenstatistiken anzeigen",
+    "show_conditions": "Bedingungen anzeigen",
     "show_last_snowfall": "Letzten Schneefall anzeigen",
-    "show_elevation": "Höhendaten anzeigen",
+    "show_forecast": "Schneevorhersage anzeigen",
+    "show_last_updated": "Zuletzt aktualisiert anzeigen",
+    "show_link": "Link-Symbol anzeigen",
+    "hide_closed_resorts": "Geschlossene Skigebiete ausblenden",
     "sort_by": "Sortieren nach",
     "sort_by_options": {
       "mountain": "Schnee (Berg)",
@@ -41,6 +39,17 @@
       "slopes_total_km": "Gesamt",
       "elevation": "Höhe",
       "link_title": "{resortName} Detailseite auf bergfex öffnen"
+    },
+    "forecast": {
+      "daily": "Täglich",
+      "summary": "Zusammenfassung",
+      "hour": "{hours} Stunden",
+      "today": "Heute",
+      "tomorrow": "Morgen"
+    },
+    "accordion": {
+      "conditions": "Bedingungen",
+      "forecast": "Schneevorhersage"
     }
   },
   "common": {

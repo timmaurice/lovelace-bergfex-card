@@ -27,15 +27,10 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
   public setConfig(config: BergfexCardConfig): void {
     this._config = {
       show_snow: true,
-      show_lifts: true,
-      show_last_updated: true,
-      hide_closed_resorts: false,
-      show_link: true,
+      show_lifts_slopes: true,
       show_conditions: true,
-      show_avalanche: true,
-      show_slopes: true,
       show_last_snowfall: true,
-      show_elevation: true,
+      show_forecast: false,
       ...config,
     };
   }
@@ -57,19 +52,7 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
         selector: { boolean: {} },
       },
       {
-        name: 'show_lifts',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_last_updated',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'hide_closed_resorts',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_link',
+        name: 'show_lifts_slopes',
         selector: { boolean: {} },
       },
       {
@@ -77,19 +60,23 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
         selector: { boolean: {} },
       },
       {
-        name: 'show_avalanche',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_slopes',
-        selector: { boolean: {} },
-      },
-      {
         name: 'show_last_snowfall',
         selector: { boolean: {} },
       },
       {
-        name: 'show_elevation',
+        name: 'show_forecast',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_last_updated',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_link',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'hide_closed_resorts',
         selector: { boolean: {} },
       },
       {

@@ -1,8 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '../src/bergfex-card';
 import * as utils from '../src/utils';
-import type { BergfexCard } from '../src/bergfex-card';
+import { BergfexCard } from '../src/bergfex-card';
 import { HomeAssistant, BergfexCardConfig } from '../src/types';
+
+vi.mock('../src/svg/mountain-peak.svg', () => ({ default: '' }));
+vi.mock('../src/svg/mountain-valley.svg', () => ({ default: '' }));
+
+vi.mock('../src/localize.ts', () => ({
+  localize: (_hass: unknown, key: string) => {
+    const parts = key.split('.');
+    return parts[parts.length - 1]
+      .split('_')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  },
+}));
 
 // Mock console.info
 vi.spyOn(console, 'info').mockImplementation(() => undefined);
@@ -13,11 +26,11 @@ interface HaCard extends HTMLElement {
 }
 
 /**
- * Creates a mock station with entities and states.
- * @param id - A unique identifier for the station (e.g., 'aral').
+ * Creates a mock resort with entities and states.
+ * @param id - A unique identifier for the resort (e.g., 'ischgl').
  * @param name - The friendly name of the resort.
  * @param data - An object with resort data.
- * @returns An object containing entities and states for the mock station.
+ * @returns An object containing entities, states, and devices for the mock resort.
  */
 const createMockResort = (
   id: string,
@@ -30,6 +43,8 @@ const createMockResort = (
     new_snow?: string;
     lifts_open?: string;
     lifts_total?: string;
+    forecast_days?: boolean;
+    forecast_summaries?: boolean;
   },
 ) => {
   const device_id = `device-${id}`;
@@ -43,7 +58,7 @@ const createMockResort = (
   };
 
   const createEntity = (key: string, state: string, unit?: string, extraAttributes: Record<string, unknown> = {}) => {
-    const entity_id = `sensor.${id}_${key}`;
+    const entity_id = key.startsWith('image.') ? key : `sensor.${id}_${key}`;
     entities[entity_id] = { entity_id, device_id };
     states[entity_id] = {
       entity_id,
@@ -61,6 +76,22 @@ const createMockResort = (
   if (data.lifts_open) createEntity('lifts_open', data.lifts_open);
   if (data.lifts_total) createEntity('lifts_total', data.lifts_total);
   createEntity('last_update', new Date().toISOString());
+
+  if (data.forecast_days) {
+    for (let i = 0; i < 6; i++) {
+      createEntity(`image.${id}_snow_forecast_day_${i}`, new Date().toISOString(), undefined, {
+        entity_picture: `/local/images/day_${i}.png`,
+      });
+    }
+  }
+
+  if (data.forecast_summaries) {
+    [48, 72, 96].forEach((h) => {
+      createEntity(`image.${id}_snow_forecast_summary_${h}h`, new Date().toISOString(), undefined, {
+        entity_picture: `/local/images/summary_${h}h.png`,
+      });
+    });
+  }
 
   return { entities, states, devices, device_id };
 };
@@ -128,9 +159,7 @@ describe('BergfexCard', () => {
 
     it('should throw an error if no resorts are provided', () => {
       element.hass = hass; // Set hass before calling setConfig
-      expect(() => element.setConfig({ type: 'custom:bergfex-card', resorts: [] })).toThrow(
-        'You need to define at least one resort entity.',
-      );
+      expect(() => element.setConfig({ type: 'custom:bergfex-card' } as BergfexCardConfig)).toThrow('No Resorts');
     });
   });
 
@@ -153,7 +182,7 @@ describe('BergfexCard', () => {
         lifts_total: '45',
       };
       const resort = createMockResort('ischgl', 'Ischgl', resortData);
-      await setupCard({ show_elevation: false }, resort);
+      await setupCard({ show_lifts_slopes: true }, resort);
 
       const resortEl = element.shadowRoot?.querySelector('.resort');
       expect(resortEl).not.toBeNull();
@@ -161,12 +190,20 @@ describe('BergfexCard', () => {
       expect(resortEl?.querySelector('.resort-name')?.textContent).toBe('Ischgl');
       expect(resortEl?.querySelector('.resort-status')?.textContent).toBe('Open');
 
-      const detailItems = resortEl?.querySelectorAll('.detail-item');
+      const detailItems = element.shadowRoot?.querySelectorAll('.detail-item');
       // Normalize whitespace for more reliable matching
       expect(detailItems?.[0].textContent?.replace(/\s+/g, ' ').trim()).toContain('150 cm'); // snow mountain
+      expect(detailItems?.[0].textContent?.replace(/\s+/g, ' ').trim()).toContain('Snow Mountain'); // label
+
       expect(detailItems?.[1].textContent?.replace(/\s+/g, ' ').trim()).toContain('30 cm'); // snow valley
+      expect(detailItems?.[1].textContent?.replace(/\s+/g, ' ').trim()).toContain('Snow Valley'); // label
+
       expect(detailItems?.[2].textContent?.replace(/\s+/g, ' ').trim()).toContain('10 cm'); // new snow
-      expect(detailItems?.[3].textContent?.replace(/\s+/g, ' ').trim()).toContain('40/45'); // lifts
+
+      // Check that lifts are shown (with progress bar)
+      const liftItems = Array.from(detailItems || []).filter((item) => item.textContent?.includes('40/45'));
+      expect(liftItems.length).toBeGreaterThan(0);
+      expect(liftItems[0].querySelector('.progress-bar-container')).not.toBeNull(); // progress bar
     });
   });
 
@@ -179,9 +216,9 @@ describe('BergfexCard', () => {
       expect(snowIcon).toBeNull();
     });
 
-    it('should hide lift details when show_lifts is false', async () => {
+    it('should hide lift details when show_lifts_slopes is false', async () => {
       const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open', lifts_open: '10' });
-      await setupCard({ show_lifts: false }, resort);
+      await setupCard({ show_lifts_slopes: false }, resort);
 
       const liftIcon = element.shadowRoot?.querySelector('ha-icon[icon="mdi:gondola"]');
       expect(liftIcon).toBeNull();
@@ -233,6 +270,84 @@ describe('BergfexCard', () => {
 
       const resortEls = element.shadowRoot?.querySelectorAll('.resort');
       expect(resortEls?.length).toBe(2);
+    });
+  });
+
+  describe('Forecast Slideshow', () => {
+    it('should render forecast section when enabled and data exists', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        forecast_days: true,
+        forecast_summaries: true,
+      });
+      await setupCard({ show_forecast: true }, resort);
+
+      // Open the forecast accordion by finding it by text (works with mock localization)
+      const accordionHeaders = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const forecastHeader = accordionHeaders.find((h) => h.textContent?.includes('Forecast')) as HTMLElement;
+      forecastHeader?.click();
+      await element.updateComplete;
+
+      const forecastContainer = element.shadowRoot?.querySelector('.forecast-container');
+      expect(forecastContainer).not.toBeNull();
+
+      const tabs = element.shadowRoot?.querySelectorAll('.forecast-tab');
+      expect(tabs?.length).toBeGreaterThan(0);
+
+      const carouselLabel = element.shadowRoot?.querySelector('.carousel-label');
+      expect(carouselLabel).not.toBeNull();
+
+      const image = element.shadowRoot?.querySelector('.forecast-image');
+      expect(image).not.toBeNull();
+      expect(image?.getAttribute('src')).toBe('/local/images/day_0.png');
+    });
+
+    it('should switch tabs and update image', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        forecast_days: true,
+        forecast_summaries: true,
+      });
+      await setupCard({ show_forecast: true }, resort);
+
+      // Open the forecast accordion by finding it by text (works with mock localization)
+      const accordionHeaders2 = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const forecastHeader2 = accordionHeaders2.find((h) => h.textContent?.includes('Forecast')) as HTMLElement;
+      forecastHeader2?.click();
+      await element.updateComplete;
+
+      const tabs = element.shadowRoot?.querySelectorAll('.forecast-tab');
+      const summaryTab = tabs?.[1] as HTMLElement;
+      summaryTab.click();
+      await element.updateComplete;
+
+      const carouselLabel = element.shadowRoot?.querySelector('.carousel-label');
+      expect(carouselLabel).not.toBeNull(); // Just verify label exists
+      const image = element.shadowRoot?.querySelector('.forecast-image');
+      expect(image?.getAttribute('src')).toBe('/local/images/summary_48h.png');
+    });
+
+    it('should navigate carousel', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        forecast_days: true,
+      });
+      await setupCard({ show_forecast: true }, resort);
+
+      // Open the forecast accordion by finding it by text (works with mock localization)
+      const accordionHeaders = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const forecastHeader = accordionHeaders.find((h) => h.textContent?.includes('Forecast')) as HTMLElement;
+      forecastHeader?.click();
+      await element.updateComplete;
+
+      const nextBtn = element.shadowRoot?.querySelector('.carousel-btn:last-of-type') as HTMLElement;
+      nextBtn.click();
+      await element.updateComplete;
+
+      const carouselLabel = element.shadowRoot?.querySelector('.carousel-label');
+      expect(carouselLabel).not.toBeNull();
+      const image = element.shadowRoot?.querySelector('.forecast-image');
+      expect(image?.getAttribute('src')).toBe('/local/images/day_1.png');
     });
   });
 
