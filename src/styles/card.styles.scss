@@ -12,7 +12,6 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   padding: 12px;
   transition: background-color 0.2s ease-in-out;
 
@@ -52,8 +51,8 @@
 
 .details {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   padding-top: 12px;
 }
 
@@ -88,10 +87,14 @@
   font-size: 0.8em;
 }
 
+.n-a {
+  opacity: 0.4;
+}
+
 .resort-footer {
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .link-icon {
@@ -115,34 +118,38 @@
 }
 
 .progress-bar-container {
-  width: 100%;
-  height: 4px;
   background-color: var(--divider-color);
   border-radius: 2px;
+  height: 4px;
   margin-top: 4px;
   overflow: hidden;
+  width: 100%;
 }
 
 .progress-bar-fill {
-  height: 100%;
   background-color: var(--primary-color);
   border-radius: 2px;
+  height: 100%;
   transition: width 0.3s ease-in-out;
 }
 
 .accordion-container {
-  margin-top: 12px;
   border-top: 1px solid var(--divider-color);
+  margin-top: 12px;
+
+  + .accordion-container {
+    margin-top: 0;
+  }
 }
 
 .accordion-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  cursor: pointer;
-  font-weight: 500;
   color: var(--primary-text-color);
+  cursor: pointer;
+  display: flex;
+  font-weight: 500;
+  justify-content: space-between;
+  padding: 12px 0;
 
   &:hover {
     background-color: rgba(var(--rgb-primary-text-color), 0.02);
@@ -157,25 +164,19 @@
   }
 }
 
-.forecast-container {
-  margin-top: 16px;
-  border-top: 1px solid var(--divider-color);
-  padding-top: 12px;
-}
-
 .forecast-tabs {
+  border-bottom: 1px solid var(--divider-color);
   display: flex;
   gap: 16px;
   margin-bottom: 12px;
-  border-bottom: 1px solid var(--divider-color);
 }
 
 .forecast-tab {
-  cursor: pointer;
-  padding: 8px 12px;
-  font-weight: 500;
-  color: var(--secondary-text-color);
   border-bottom: 2px solid transparent;
+  color: var(--secondary-text-color);
+  cursor: pointer;
+  font-weight: 500;
+  padding: 8px 12px;
   transition: all 0.2s ease;
 
   &:hover {
@@ -183,55 +184,55 @@
   }
 
   &.active {
-    color: var(--primary-color);
     border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
   }
 }
 
 .forecast-carousel {
-  position: relative;
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .forecast-image-container {
-  position: relative;
-  width: 100%;
+  align-items: center;
   aspect-ratio: 16/9;
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
-  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 .forecast-image {
-  width: 100%;
   height: 100%;
   object-fit: contain;
+  width: 100%;
 }
 
 .carousel-controls {
-  display: flex;
   align-items: center;
+  display: flex;
   justify-content: space-between;
-  width: 100%;
   margin-top: 8px;
+  width: 100%;
 }
 
 .carousel-btn {
+  align-items: center;
   background: none;
   border: none;
-  cursor: pointer;
-  color: var(--primary-text-color);
-  padding: 8px;
   border-radius: 50%;
+  color: var(--primary-text-color);
+  cursor: pointer;
   display: flex;
-  align-items: center;
   justify-content: center;
+  padding: 8px;
   transition: background-color 0.2s;
 
   &:hover {
@@ -245,6 +246,6 @@
 }
 
 .carousel-label {
-  font-weight: 500;
   font-size: 1.1em;
+  font-weight: 500;
 }

@@ -70,8 +70,7 @@ You can now add the card to your dashboard.
 | `resorts`             | list (string or object) | **Required** | A list of device IDs. To set a custom name, use an object: `{ device: '...', name: '...' }`. |
 | `show_snow`           | boolean                 | `true`       | Show snow depth information (mountain, valley, new).                                         |
 | `show_lifts_slopes`   | boolean                 | `true`       | Show lift and slope statistics (open/total lifts and slopes).                                |
-| `show_conditions`     | boolean                 | `true`       | Show conditions section (snow/slope condition, avalanche warning).                           |
-| `show_last_snowfall`  | boolean                 | `true`       | Show last snowfall date in the conditions section.                                           |
+| `show_conditions`     | boolean                 | `true`       | Show conditions section (snow/slope condition, avalanche warning, last snowfall).            |
 | `show_forecast`       | boolean                 | `false`      | Show snow forecast carousel with daily and summary views.                                    |
 | `show_last_updated`   | boolean                 | `true`       | Show the last updated timestamp.                                                             |
 | `show_link`           | boolean                 | `true`       | Show a link to the Bergfex detail page for the resort.                                       |

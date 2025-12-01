@@ -73,7 +73,6 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       show_conditions: true,
       show_avalanche: true,
       show_slopes: true,
-      show_last_snowfall: true,
       show_elevation: true,
       ...config,
     };
@@ -302,6 +301,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     `;
   }
 
+  private _isNA(state: string): boolean {
+    return ['N/A', 'keine Meldung', 'unknown'].includes(state);
+  }
+
   protected render(): TemplateResult {
     if (!this._config || !this.hass) {
       return html``;
@@ -427,7 +430,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                               ? html`<span
                                   >${snow_mountain.state} ${snow_mountain.attributes.unit_of_measurement ?? ''}</span
                                 >`
-                              : html`<span>N/A</span>`}
+                              : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.header.snow_mountain')}
                               ${snow_mountain?.attributes.elevation
@@ -451,7 +454,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                               ? html`<span
                                   >${snow_valley.state} ${snow_valley.attributes.unit_of_measurement ?? ''}</span
                                 >`
-                              : html`<span>N/A</span>`}
+                              : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.header.snow_valley')}
                               ${snow_valley?.attributes.elevation ? `(${snow_valley.attributes.elevation}m)` : ''}</span
@@ -471,7 +474,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           <div class="detail-item-value">
                             ${new_snow && !isNaN(parseFloat(new_snow.state))
                               ? html`<span>${new_snow.state} ${new_snow.attributes.unit_of_measurement ?? ''}</span>`
-                              : html`<span>N/A</span>`}
+                              : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.header.new_snow')}</span
                             >
@@ -500,7 +503,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                     parseFloat(lifts_open.state),
                                     parseFloat(lifts_total.state),
                                   )}`
-                              : html`<span>N/A</span>`}
+                              : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.lifts_open')}</span
                             >
@@ -535,7 +538,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                           parseFloat(slopes_open_km.state),
                                           parseFloat(slopes_total_km.state),
                                         )}`
-                                    : html`<span>N/A</span>`}
+                                    : html`<span class="n-a">N/A</span>`}
                                   <span class="detail-item-label"
                                     >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}</span
                                   >
@@ -565,7 +568,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                           parseFloat(slopes_open.state),
                                           parseFloat(slopes_total.state),
                                         )}`
-                                    : html`<span>N/A</span>`}
+                                    : html`<span class="n-a">N/A</span>`}
                                   <span class="detail-item-label"
                                     >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}
                                     (${localize(this.hass, 'component.bergfex-card.card.header.slopes_total_km')})</span
@@ -578,8 +581,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                     : ''}
                 </div>
 
-                ${(this._config.show_conditions && (snow_condition || slope_condition || avalanche_warning)) ||
-                (this._config.show_last_snowfall && last_snowfall)
+                ${this._config.show_conditions &&
+                (snow_condition || slope_condition || avalanche_warning || last_snowfall)
                   ? html`
                       <div class="accordion-container">
                         <div
@@ -611,7 +614,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                             >
                                               <ha-icon icon="mdi:weather-snowy"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${snow_condition.state}</span>
+                                                <span
+                                                  class=${classMap({
+                                                    'n-a': this._isNA(snow_condition.state),
+                                                  })}
+                                                  >${snow_condition.state}</span
+                                                >
                                                 <span class="detail-item-label"
                                                   >${localize(
                                                     this.hass,
@@ -635,7 +643,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                             >
                                               <ha-icon icon="mdi:ski"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${slope_condition.state}</span>
+                                                <span
+                                                  class=${classMap({
+                                                    'n-a': this._isNA(slope_condition.state),
+                                                  })}
+                                                  >${slope_condition.state}</span
+                                                >
                                                 <span class="detail-item-label"
                                                   >${localize(
                                                     this.hass,
@@ -661,7 +674,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                       >
                                         <ha-icon icon="mdi:alert"></ha-icon>
                                         <div class="detail-item-value">
-                                          <span>${avalanche_warning.state}</span>
+                                          <span
+                                            class=${classMap({
+                                              'n-a': this._isNA(avalanche_warning.state),
+                                            })}
+                                            >${avalanche_warning.state}</span
+                                          >
                                           <span class="detail-item-label"
                                             >${localize(
                                               this.hass,
@@ -672,20 +690,23 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                       </div>
                                     `
                                   : ''}
-                                ${this._config.show_last_snowfall && last_snowfall
+                                ${last_snowfall
                                   ? html`
                                       <div
                                         class="detail-item"
                                         @click=${(e: Event) => {
                                           e.stopPropagation();
-                                          if (last_snowfall) {
-                                            this._handleMoreInfo(last_snowfall.entity_id);
-                                          }
+                                          this._handleMoreInfo(last_snowfall.entity_id);
                                         }}
                                       >
-                                        <ha-icon icon="mdi:calendar-snowflake"></ha-icon>
+                                        <ha-icon icon="mdi:calendar-clock"></ha-icon>
                                         <div class="detail-item-value">
-                                          <span>${last_snowfall.state}</span>
+                                          <span
+                                            class=${classMap({
+                                              'n-a': this._isNA(last_snowfall.state),
+                                            })}
+                                            >${last_snowfall.state}</span
+                                          >
                                           <span class="detail-item-label"
                                             >${localize(
                                               this.hass,

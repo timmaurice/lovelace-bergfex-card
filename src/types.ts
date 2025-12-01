@@ -74,7 +74,6 @@ export interface BergfexCardConfig extends LovelaceCardConfig {
   resorts: ResortConfig[];
   show_conditions?: boolean;
   show_forecast?: boolean;
-  show_last_snowfall?: boolean;
   show_last_updated?: boolean;
   show_lifts_slopes?: boolean;
   show_link?: boolean;
