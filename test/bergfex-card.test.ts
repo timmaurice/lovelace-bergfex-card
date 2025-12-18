@@ -43,6 +43,8 @@ const createMockResort = (
     new_snow?: string;
     lifts_open?: string;
     lifts_total?: string;
+    slopes_open_km?: string;
+    slopes_total_km?: string;
     forecast_days?: boolean;
     forecast_summaries?: boolean;
   },
@@ -75,6 +77,8 @@ const createMockResort = (
   if (data.new_snow) createEntity('new_snow', data.new_snow, 'cm');
   if (data.lifts_open) createEntity('lifts_open', data.lifts_open);
   if (data.lifts_total) createEntity('lifts_total', data.lifts_total);
+  if (data.slopes_open_km) createEntity('slopes_open_km', data.slopes_open_km, 'km');
+  if (data.slopes_total_km) createEntity('slopes_total_km', data.slopes_total_km, 'km');
   createEntity('last_update', new Date().toISOString());
 
   if (data.forecast_days) {
@@ -203,7 +207,27 @@ describe('BergfexCard', () => {
       // Check that lifts are shown (with progress bar)
       const liftItems = Array.from(detailItems || []).filter((item) => item.textContent?.includes('40/45'));
       expect(liftItems.length).toBeGreaterThan(0);
+      expect(liftItems.length).toBeGreaterThan(0);
       expect(liftItems[0].querySelector('.progress-bar-container')).not.toBeNull(); // progress bar
+    });
+
+    it('should render slopes open even without total', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        slopes_open_km: '25',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot?.querySelectorAll('.detail-item');
+      // Normalize whitespace
+      // We need to find the item with slope icon
+      const slopeItem = Array.from(detailItems || []).find((item) =>
+        item.querySelector('ha-icon[icon="mdi:slope-downhill"]'),
+      );
+      expect(slopeItem).not.toBeNull();
+      expect(slopeItem?.textContent?.replace(/\s+/g, ' ').trim()).toContain('25 km');
+      expect(slopeItem?.querySelector('.progress-bar-container')).toBeNull(); // NO progress bar
     });
   });
 

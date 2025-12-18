@@ -62,16 +62,25 @@
   cursor: pointer;
   display: flex;
   gap: 8px;
+
+  ha-icon {
+    color: var(--secondary-text-color);
+  }
 }
 
-.detail-item ha-icon {
-  color: var(--secondary-text-color);
-}
-
-.detail-item svg {
+.detail-item svg,
+.custom-icon {
+  align-items: center;
+  display: flex;
   height: var(--mdc-icon-size, 24px);
-  stroke: var(--secondary-text-color);
+  justify-content: center;
   width: var(--mdc-icon-size, 24px);
+
+  svg {
+    height: 100%;
+    stroke: var(--secondary-text-color);
+    width: 100%;
+  }
 }
 
 .detail-item-value {
@@ -79,7 +88,7 @@
   display: flex;
   flex-direction: column;
   font-size: 1.1em;
-  width: 100%;
+  width: calc(100% - 32px);
 }
 
 .detail-item-label {
@@ -87,8 +96,8 @@
   font-size: 0.8em;
 }
 
-.n-a {
-  opacity: 0.4;
+.detail-item.n-a {
+  opacity: 0.5;
 }
 
 .value-row {
@@ -107,9 +116,11 @@
   &.up {
     color: var(--label-badge-green, #4caf50);
   }
+
   &.down {
     color: var(--label-badge-red, #f44336);
   }
+
   &.same {
     color: var(--secondary-text-color);
     opacity: 0.5;
@@ -118,8 +129,10 @@
 
 .resort-footer {
   align-items: center;
+  border-top: 1px solid var(--divider-color);
   display: flex;
   justify-content: space-between;
+  padding: 12px 0 0;
 }
 
 .link-icon {
