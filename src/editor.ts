@@ -30,6 +30,7 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
       show_lifts_slopes: true,
       show_conditions: true,
       show_forecast: false,
+      show_trend: false,
       ...config,
     };
   }
@@ -60,6 +61,10 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
       },
       {
         name: 'show_forecast',
+        selector: { boolean: {} },
+      },
+      {
+        name: 'show_trend',
         selector: { boolean: {} },
       },
       {

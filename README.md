@@ -18,6 +18,7 @@ A custom Lovelace card for Home Assistant to display ski resort conditions from 
 - Show/hide resort details like snow depth, lifts, and last update time.
 - Option to hide resorts that are currently closed.
 - Status badge color changes based on whether the resort is open or closed.
+- Optional 24h trend indicators (↗️/↘️) for snow depths and lift/slope counts.
 - Sort resorts by various criteria (snow depth, open lifts, etc.).
 - Fully customizable through the visual editor.
 
@@ -73,6 +74,7 @@ You can now add the card to your dashboard.
 | `show_conditions`     | boolean                 | `true`       | Show conditions section (snow/slope condition, avalanche warning, last snowfall).            |
 | `show_forecast`       | boolean                 | `false`      | Show snow forecast carousel with daily and summary views.                                    |
 | `show_last_updated`   | boolean                 | `true`       | Show the last updated timestamp.                                                             |
+| `show_trend`          | boolean                 | `false`      | Show 24h trend indicators for numeric values (Snow, Lifts, Slopes).                          |
 | `show_link`           | boolean                 | `true`       | Show a link to the Bergfex detail page for the resort.                                       |
 | `hide_closed_resorts` | boolean                 | `false`      | Hide resorts that are currently closed.                                                      |
 | `sort_by`             | string                  | `(none)`     | Sort resorts by a specific value. Options: `mountain`, `valley`, `new`, `lift`, `update`.    |

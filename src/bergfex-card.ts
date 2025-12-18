@@ -4,7 +4,7 @@ import { HomeAssistant, LovelaceCard, LovelaceCardEditor, ResortConfig, BergfexC
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { localize } from './localize.js';
-import { fireEvent, formatRelativeTime } from './utils.js';
+import { fireEvent, formatRelativeTime, fetchHistory } from './utils.js';
 import styles from './styles/card.styles.scss';
 
 import mountainIcon from './svg/mountain-peak.svg';
@@ -59,6 +59,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   @state() private _config!: BergfexCardConfig;
   @state() private _forecastState: Record<string, { tab: 'daily' | 'summary'; index: number }> = {};
   @state() private _accordionState: Record<string, 'conditions' | 'forecast' | null> = {};
+  @state() private _historyState: Record<string, string> = {}; // entity_id -> state 24h ago
 
   public setConfig(config: BergfexCardConfig): void {
     if (!config || !config.resorts || !Array.isArray(config.resorts) || config.resorts.length === 0) {
@@ -73,8 +74,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       show_conditions: true,
       show_avalanche: true,
       show_slopes: true,
+      show_trend: false,
       ...config,
     };
+
+    if (this._config.show_trend) {
+      this._fetchHistory();
+    }
   }
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -226,10 +232,52 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       const resorts = this._getResorts(this.hass, this._config);
       const entities = Object.values(resorts).flatMap((s) => Object.values(s));
       const hasChanged = entities.some((entity) => entity && oldHass.states[entity] !== this.hass.states[entity]);
-      return hasChanged || oldHass.language !== this.hass.language;
+      const showTrendChanged = this.getOldConfig(changedProperties)?.show_trend !== this._config.show_trend;
+
+      if (showTrendChanged && this._config.show_trend) {
+        this._fetchHistory();
+      }
+
+      return hasChanged || oldHass.language !== this.hass.language || changedProperties.has('_historyState');
     }
 
     return true; // First render
+  }
+
+  private getOldConfig(changedProperties: Map<string | number | symbol, unknown>): BergfexCardConfig | undefined {
+    return changedProperties.get('_config') as BergfexCardConfig | undefined;
+  }
+
+  private async _fetchHistory(): Promise<void> {
+    if (!this.hass || !this._config.resorts) return;
+
+    const resorts = this._getResorts(this.hass, this._config);
+    const snowEntities = Object.values(resorts)
+      .flatMap((r) => [r.snow_mountain, r.snow_valley, r.new_snow, r.lifts_open, r.slopes_open_km, r.slopes_open])
+      .filter(Boolean) as string[];
+
+    if (snowEntities.length === 0) return;
+
+    this._historyState = await fetchHistory(this.hass, snowEntities, 24);
+  }
+
+  private _renderTrend(entityId: string, currentState: string): TemplateResult {
+    if (!this._config.show_trend) return html``;
+    const oldState = this._historyState[entityId];
+    if (oldState === undefined || this._isNA(currentState) || this._isNA(oldState)) return html``;
+
+    const currentVal = parseFloat(currentState);
+    const oldVal = parseFloat(oldState);
+
+    if (isNaN(currentVal) || isNaN(oldVal)) return html``;
+
+    if (currentVal > oldVal) {
+      return html`<ha-icon class="trend-icon up" icon="mdi:trending-up"></ha-icon>`;
+    } else if (currentVal < oldVal) {
+      return html`<ha-icon class="trend-icon down" icon="mdi:trending-down"></ha-icon>`;
+    } else {
+      return html`<ha-icon class="trend-icon same" icon="mdi:trending-neutral"></ha-icon>`;
+    }
   }
 
   private _handleMoreInfo(entityId: string): void {
@@ -426,9 +474,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           ${unsafeSVG(mountainIcon)}
                           <div class="detail-item-value">
                             ${snow_mountain && !isNaN(parseFloat(snow_mountain.state))
-                              ? html`<span
-                                  >${snow_mountain.state} ${snow_mountain.attributes.unit_of_measurement ?? ''}</span
-                                >`
+                              ? html`<div class="value-row">
+                                  <span
+                                    >${snow_mountain.state} ${snow_mountain.attributes.unit_of_measurement ?? ''}</span
+                                  >
+                                  ${this._renderTrend(snow_mountain.entity_id, snow_mountain.state)}
+                                </div>`
                               : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.header.snow_mountain')}
@@ -450,9 +501,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           ${unsafeSVG(valleyIcon)}
                           <div class="detail-item-value">
                             ${snow_valley && !isNaN(parseFloat(snow_valley.state))
-                              ? html`<span
-                                  >${snow_valley.state} ${snow_valley.attributes.unit_of_measurement ?? ''}</span
-                                >`
+                              ? html`<div class="value-row">
+                                  <span>${snow_valley.state} ${snow_valley.attributes.unit_of_measurement ?? ''}</span>
+                                  ${this._renderTrend(snow_valley.entity_id, snow_valley.state)}
+                                </div>`
                               : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.header.snow_valley')}
@@ -472,7 +524,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           <ha-icon icon="mdi:weather-snowy-heavy"></ha-icon>
                           <div class="detail-item-value">
                             ${new_snow && !isNaN(parseFloat(new_snow.state))
-                              ? html`<span>${new_snow.state} ${new_snow.attributes.unit_of_measurement ?? ''}</span>`
+                              ? html`<div class="value-row">
+                                  <span>${new_snow.state} ${new_snow.attributes.unit_of_measurement ?? ''}</span>
+                                  ${this._renderTrend(new_snow.entity_id, new_snow.state)}
+                                </div>`
                               : html`<span class="n-a">N/A</span>`}
                             <span class="detail-item-label"
                               >${localize(this.hass, 'component.bergfex-card.card.header.new_snow')}</span
@@ -498,7 +553,11 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                             lifts_total &&
                             !isNaN(parseFloat(lifts_open.state)) &&
                             !isNaN(parseFloat(lifts_total.state))
-                              ? html`<span>${lifts_open.state}/${lifts_total.state}</span> ${this._renderProgressBar(
+                              ? html`<div class="value-row">
+                                    <span>${lifts_open.state}/${lifts_total.state}</span>
+                                    ${this._renderTrend(lifts_open.entity_id, lifts_open.state)}
+                                  </div>
+                                  ${this._renderProgressBar(
                                     parseFloat(lifts_open.state),
                                     parseFloat(lifts_total.state),
                                   )}`
@@ -529,10 +588,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   slopes_total_km &&
                                   !isNaN(parseFloat(slopes_open_km.state)) &&
                                   !isNaN(parseFloat(slopes_total_km.state))
-                                    ? html`<span
-                                          >${slopes_open_km.state}/${slopes_total_km.state}
-                                          ${slopes_open_km.attributes.unit_of_measurement ?? 'km'}</span
-                                        >
+                                    ? html`<div class="value-row">
+                                          <span
+                                            >${slopes_open_km.state}/${slopes_total_km.state}
+                                            ${slopes_open_km.attributes.unit_of_measurement ?? 'km'}</span
+                                          >
+                                          ${this._renderTrend(slopes_open_km.entity_id, slopes_open_km.state)}
+                                        </div>
                                         ${this._renderProgressBar(
                                           parseFloat(slopes_open_km.state),
                                           parseFloat(slopes_total_km.state),
@@ -562,7 +624,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   slopes_total &&
                                   !isNaN(parseFloat(slopes_open.state)) &&
                                   !isNaN(parseFloat(slopes_total.state))
-                                    ? html`<span>${slopes_open.state}/${slopes_total.state}</span>
+                                    ? html`<div class="value-row">
+                                          <span>${slopes_open.state}/${slopes_total.state}</span>
+                                          ${this._renderTrend(slopes_open.entity_id, slopes_open.state)}
+                                        </div>
                                         ${this._renderProgressBar(
                                           parseFloat(slopes_open.state),
                                           parseFloat(slopes_total.state),

@@ -362,4 +362,57 @@ describe('BergfexCard', () => {
       expect(fireEventSpy).toHaveBeenCalledWith(element, 'hass-more-info', { entityId: 'sensor.ischgl_status' });
     });
   });
+
+  describe('Trend Indicators', () => {
+    it('should render trend icons when show_trend is true and history exists', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_mountain: '150',
+        snow_valley: '50',
+      });
+
+      // Mock history response
+      const mockHistory = {
+        'sensor.ischgl_snow_mountain': [{ s: '140' }], // Up
+        'sensor.ischgl_snow_valley': [{ s: '60' }], // Down
+        // Add minimal content for others if needed, or rely on them being optional in render
+      };
+
+      // Mocking callWS
+      hass.callWS = vi.fn().mockResolvedValue(mockHistory);
+
+      await setupCard({ show_trend: true }, resort);
+
+      // Force history state update (in real usage it's triggered by _fetchHistory)
+      // Since _fetchHistory is async and we want to verify the render,
+      // we might need to wait or manually set it if the mock doesn't trigger it fast enough.
+      // Actually, my implementation calls _fetchHistory in setConfig.
+
+      await element.updateComplete;
+
+      const upIcon = element.shadowRoot?.querySelector('.trend-icon.up');
+      const downIcon = element.shadowRoot?.querySelector('.trend-icon.down');
+
+      expect(upIcon).not.toBeNull();
+      expect(downIcon).not.toBeNull();
+      expect(upIcon?.getAttribute('icon')).toBe('mdi:trending-up');
+      expect(downIcon?.getAttribute('icon')).toBe('mdi:trending-down');
+    });
+
+    it('should not render trend icons when show_trend is false', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_mountain: '150',
+      });
+
+      // Mocking callWS
+      hass.callWS = vi.fn().mockResolvedValue({ 'sensor.ischgl_snow_mountain': [{ s: '140' }] });
+
+      await setupCard({ show_trend: false }, resort);
+      await element.updateComplete;
+
+      const trendIcon = element.shadowRoot?.querySelector('.trend-icon');
+      expect(trendIcon).toBeNull();
+    });
+  });
 });

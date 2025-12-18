@@ -57,6 +57,7 @@
 }
 
 .detail-item {
+  --mdc-icon-size: 24px;
   align-items: center;
   cursor: pointer;
   display: flex;
@@ -64,7 +65,6 @@
 }
 
 .detail-item ha-icon {
-  --mdc-icon-size: 28px;
   color: var(--secondary-text-color);
 }
 
@@ -89,6 +89,31 @@
 
 .n-a {
   opacity: 0.4;
+}
+
+.value-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.trend-icon {
+  --mdc-icon-size: 18px;
+  display: inline-block;
+  margin-left: 4px;
+  vertical-align: middle;
+
+  &.up {
+    color: var(--label-badge-green, #4caf50);
+  }
+  &.down {
+    color: var(--label-badge-red, #f44336);
+  }
+  &.same {
+    color: var(--secondary-text-color);
+    opacity: 0.5;
+  }
 }
 
 .resort-footer {

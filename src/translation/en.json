@@ -10,6 +10,7 @@
     "show_lifts_slopes": "Show lift & slope statistics",
     "show_conditions": "Show conditions section",
     "show_forecast": "Show snow forecast",
+    "show_trend": "Show trend indicators (24h)",
     "show_last_updated": "Show last updated",
     "show_link": "Show link icon",
     "hide_closed_resorts": "Hide closed resorts",

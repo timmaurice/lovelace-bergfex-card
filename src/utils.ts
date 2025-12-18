@@ -84,3 +84,43 @@ export function formatRelativeTime(date: string | Date, hass: HomeAssistant): st
     return formatDate(date, hass);
   }
 }
+
+/**
+ * Fetches the history of states for a list of entities from Home Assistant.
+ * @param hass The Home Assistant object.
+ * @param entityIds The list of entity IDs to fetch history for.
+ * @param hoursAgo How many hours ago to fetch the state for.
+ * @returns A promise that resolves to a record mapping entity IDs to their states at the requested time.
+ */
+export async function fetchHistory(
+  hass: HomeAssistant,
+  entityIds: string[],
+  hoursAgo: number,
+): Promise<Record<string, string>> {
+  if (entityIds.length === 0) return {};
+
+  const startTime = new Date();
+  startTime.setHours(startTime.getHours() - hoursAgo);
+
+  try {
+    const history = await hass.callWS<Record<string, Array<{ s: string }>>>({
+      type: 'history/history_during_period',
+      start_time: startTime.toISOString(),
+      end_time: startTime.toISOString(),
+      entity_ids: entityIds,
+      no_attributes: true,
+    });
+
+    const results: Record<string, string> = {};
+    Object.entries(history).forEach(([entityId, states]) => {
+      if (Array.isArray(states) && states.length > 0) {
+        results[entityId] = states[0].s;
+      }
+    });
+
+    return results;
+  } catch (err) {
+    console.error(`Error fetching history for ${entityIds.join(', ')}:`, err);
+    return {};
+  }
+}
