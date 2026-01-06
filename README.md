@@ -28,6 +28,7 @@ The editor is available in the following languages:
 
 - English
 - German
+- Polish
 
 <details>
 <summary>Contributing Translations</summary>
@@ -35,9 +36,10 @@ The editor is available in the following languages:
 If you would like to contribute a new translation:
 
 1.  Fork the repository on GitHub.
-2.  In the `src/translation` directory, copy `en.json` and rename it to your language code (e.g., `fr.json` for French).
-3.  Translate all the values in the new file.
-4.  Submit a pull request with your changes.
+1.  In the `src/translation` directory, copy `en.json` and rename it to your language code (e.g., `fr.json` for French).
+1.  Translate all the values in the new file.
+1.  Import new file in `localize.ts` and add it to `translations` array.
+1.  Submit a pull request with your changes.
 
 </details>
 
