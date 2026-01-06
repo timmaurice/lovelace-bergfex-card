@@ -25,11 +25,11 @@
   },
   "card": {
     "resort_not_found": "Nie znaleziono resortu: {resort}",
-    "lifts_open": "wyciągi",
+    "lifts_open": "Wyciągi",
     "header": {
       "snow_mountain": "Szczyt",
       "snow_valley": "Dolina",
-      "new_snow": "Nowy",
+      "new_snow": "Nowy opad",
       "snow_condition": "Warunki śniegowe",
       "slope_condition": "Warunki na stoku",
       "avalanche_warning": "Ostrzeżenie lawinowe",
