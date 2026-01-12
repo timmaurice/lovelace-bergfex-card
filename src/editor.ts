@@ -93,6 +93,11 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
               { value: 'valley', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.valley') },
               { value: 'new', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.new') },
               { value: 'lift', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.lift') },
+              {
+                value: 'classical',
+                label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.classical'),
+              },
+              { value: 'skating', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.skating') },
               { value: 'update', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.update') },
             ],
           },

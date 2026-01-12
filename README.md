@@ -7,19 +7,20 @@
 [![GH-code-size](https://img.shields.io/github/languages/code-size/timmaurice/lovelace-bergfex-card.svg?style=flat-square)](https://github.com/timmaurice/lovelace-bergfex-card)
 ![GitHub](https://img.shields.io/github/license/timmaurice/lovelace-bergfex-card?style=flat-square)
 
-A custom Lovelace card for Home Assistant to display ski resort conditions from the [Bergfex integration](https://github.com/timmaurice/bergfex).
+A custom Lovelace card for Home Assistant to display ski resort and cross-country skiing conditions from the [Bergfex integration](https://github.com/timmaurice/bergfex).
 
 <img src="https://raw.githubusercontent.com/timmaurice/lovelace-bergfex-card/main/image.png" alt="Card Screenshot" />
 
 ## Features
 
-- Displays data for multiple ski resorts from the Bergfex integration.
+- Displays data for multiple ski resorts and cross-country skiing areas from the Bergfex integration.
 - Table-like layout for easy comparison between resorts.
-- Show/hide resort details like snow depth, lifts, and last update time.
+- Automatically detects resort type and shows appropriate information (snow/lifts/slopes for ski resorts, tracks/conditions for cross-country areas).
+- Show/hide resort details like snow depth, lifts, slopes, track lengths, and last update time.
 - Option to hide resorts that are currently closed.
 - Status badge color changes based on whether the resort is open or closed.
-- Optional 24h trend indicators (↗️/↘️) for snow depths and lift/slope counts.
-- Sort resorts by various criteria (snow depth, open lifts, etc.).
+- Optional 24h trend indicators (↗️/↘️) for snow depths, lift/slope counts, and track lengths.
+- Sort resorts by various criteria (snow depth, open lifts, track lengths, etc.).
 - Fully customizable through the visual editor.
 
 ## Localization
@@ -64,20 +65,20 @@ You can now add the card to your dashboard.
 
 ## Configuration
 
-| Name                  | Type                    | Default      | Description                                                                                  |
-| --------------------- | ----------------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| `type`                | string                  | **Required** | `custom:bergfex-card`                                                                        |
-| `title`               | string                  | `(none)`     | The title of the card.                                                                       |
-| `resorts`             | list (string or object) | **Required** | A list of device IDs. To set a custom name, use an object: `{ device: '...', name: '...' }`. |
-| `show_snow`           | boolean                 | `true`       | Show snow depth information (mountain, valley, new).                                         |
-| `show_lifts_slopes`   | boolean                 | `true`       | Show lift and slope statistics (open/total lifts and slopes).                                |
-| `show_conditions`     | boolean                 | `true`       | Show conditions section (snow/slope condition, avalanche warning, last snowfall).            |
-| `show_forecast`       | boolean                 | `false`      | Show snow forecast carousel with daily and summary views.                                    |
-| `show_last_updated`   | boolean                 | `true`       | Show the last updated timestamp.                                                             |
-| `show_trend`          | boolean                 | `false`      | Show 24h trend indicators for numeric values (Snow, Lifts, Slopes).                          |
-| `show_link`           | boolean                 | `true`       | Show a link to the Bergfex detail page for the resort.                                       |
-| `hide_closed_resorts` | boolean                 | `false`      | Hide resorts that are currently closed.                                                      |
-| `sort_by`             | string                  | `(none)`     | Sort resorts by a specific value. Options: `mountain`, `valley`, `new`, `lift`, `update`.    |
+| Name                  | Type                    | Default      | Description                                                                                                       |
+| --------------------- | ----------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `type`                | string                  | **Required** | `custom:bergfex-card`                                                                                             |
+| `title`               | string                  | `(none)`     | The title of the card.                                                                                            |
+| `resorts`             | list (string or object) | **Required** | A list of device IDs. To set a custom name, use an object: `{ device: '...', name: '...' }`.                      |
+| `show_snow`           | boolean                 | `true`       | Show snow depth information (mountain, valley, new) for ski resorts.                                              |
+| `show_lifts_slopes`   | boolean                 | `true`       | Show lift and slope statistics for ski resorts, or track lengths for cross-country areas.                         |
+| `show_conditions`     | boolean                 | `true`       | Show conditions section (snow/slope/track conditions, avalanche warning, operation status).                       |
+| `show_forecast`       | boolean                 | `false`      | Show snow forecast carousel with daily and summary views.                                                         |
+| `show_last_updated`   | boolean                 | `true`       | Show the last updated timestamp.                                                                                  |
+| `show_trend`          | boolean                 | `false`      | Show 24h trend indicators for numeric values (Snow, Lifts, Slopes, Tracks).                                       |
+| `show_link`           | boolean                 | `true`       | Show a link to the Bergfex detail page for the resort.                                                            |
+| `hide_closed_resorts` | boolean                 | `false`      | Hide resorts that are currently closed.                                                                           |
+| `sort_by`             | string                  | `(none)`     | Sort resorts by a specific value. Options: `mountain`, `valley`, `new`, `lift`, `classical`, `skating`, `update`. |
 
 ### Resort Object Parameters
 
@@ -90,14 +91,19 @@ You can now add the card to your dashboard.
 
 ```yaml
 type: custom:bergfex-card
-title: Ski Resorts
+title: Ski Resorts & Cross-Country Areas
 hide_closed_resorts: true
+show_snow: true
+show_lifts_slopes: true
+show_conditions: true
+sort_by: mountain
 resorts:
-  # Simple resort entry using device ID
-  - 2bf48bbf7b0c6a5d40ac7c0dfa2c4178 # Replace with your device ID
-  # Resort with a custom name
-  - device: 99a4943a53c159a2995573795447463d # Replace with your device ID
-    name: My Favorite Resort
+  # Ski resort entry
+  - device: 2bf48bbf7b0c6a5d40ac7c0dfa2c4178 # Replace with your ski resort device ID
+    name: My Favorite Ski Resort
+  # Cross-country area entry
+  - device: abc123def456ghi789 # Replace with your cross-country area device ID
+    name: Local Cross-Country Trails
 ```
 
 ## Development

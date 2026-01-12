@@ -20,6 +20,8 @@
       "valley": "Schnee (Tal)",
       "new": "Neuschnee",
       "lift": "Offene Lifte",
+      "classical": "Klassische Loipen",
+      "skating": "Skating-Loipen",
       "update": "Letzte Aktualisierung"
     }
   },
@@ -37,6 +39,11 @@
       "slopes_info": "Pisten",
       "slopes_open_km": "Offen",
       "slopes_total_km": "Gesamt",
+      "classical_trails": "Klassische Loipen",
+      "skating_trails": "Skating-Loipen",
+      "classical_condition": "Klassischer Zustand",
+      "skating_condition": "Skating-Zustand",
+      "operation_status": "Betriebsstatus",
       "link_title": "{resortName} Detailseite auf bergfex öffnen"
     },
     "forecast": {

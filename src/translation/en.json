@@ -20,6 +20,8 @@
       "valley": "Snow (Valley)",
       "new": "New Snow",
       "lift": "Lifts Open",
+      "classical": "Classical Trails",
+      "skating": "Skating Trails",
       "update": "Last Update"
     }
   },
@@ -37,6 +39,11 @@
       "slopes_info": "Slopes",
       "slopes_open_km": "Open",
       "slopes_total_km": "Total",
+      "classical_trails": "Classical Trails",
+      "skating_trails": "Skating Trails",
+      "classical_condition": "Classical Condition",
+      "skating_condition": "Skating Condition",
+      "operation_status": "Operation Status",
       "link_title": "Open {resortName} detail page on bergfex"
     },
     "forecast": {

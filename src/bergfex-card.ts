@@ -9,6 +9,8 @@ import styles from './styles/card.styles.scss';
 
 import mountainIcon from './svg/mountain-peak.svg';
 import valleyIcon from './svg/mountain-valley.svg';
+import classicCrossCountryIcon from './svg/classic-cross-country-skiing.svg';
+import skatingCrossCountryIcon from './svg/skating-cross-country-skiing.svg';
 
 export interface LovelaceHelpers {
   createCardElement(config: { type: string; [key: string]: unknown }): LovelaceCard;
@@ -31,6 +33,11 @@ interface Resort {
   slopes_open?: string;
   slopes_total?: string;
   slope_condition?: string;
+  operation_status?: string;
+  classical_trails?: string;
+  skating_trails?: string;
+  classical_condition?: string;
+  skating_condition?: string;
   forecast_days?: string[];
   forecast_summaries?: string[];
 }
@@ -67,7 +74,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     }
     this._config = {
       show_snow: true,
-      show_lifts: true,
+      show_lifts_slopes: true,
       show_last_updated: true,
       hide_closed_resorts: false,
       show_link: true,
@@ -145,7 +152,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
       deviceEntities.forEach((entity) => {
         const entityId = entity.entity_id;
-        if (entityId.endsWith('_status')) resorts[deviceId].status = entityId;
+        if (entityId.endsWith('_operation_status')) resorts[deviceId].operation_status = entityId;
+        else if (entityId.endsWith('_status')) resorts[deviceId].status = entityId;
         if (entityId.endsWith('_snow_valley')) resorts[deviceId].snow_valley = entityId;
         if (entityId.endsWith('_snow_mountain')) resorts[deviceId].snow_mountain = entityId;
         if (entityId.endsWith('_new_snow')) resorts[deviceId].new_snow = entityId;
@@ -160,6 +168,10 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         if (entityId.endsWith('_slopes_open')) resorts[deviceId].slopes_open = entityId;
         if (entityId.endsWith('_slopes_total')) resorts[deviceId].slopes_total = entityId;
         if (entityId.endsWith('_slope_condition')) resorts[deviceId].slope_condition = entityId;
+        if (entityId.endsWith('_classical_trails')) resorts[deviceId].classical_trails = entityId;
+        if (entityId.endsWith('_skating_trails')) resorts[deviceId].skating_trails = entityId;
+        if (entityId.endsWith('_classical_condition')) resorts[deviceId].classical_condition = entityId;
+        if (entityId.endsWith('_skating_condition')) resorts[deviceId].skating_condition = entityId;
 
         if (entityId.includes('_snow_forecast_day_')) {
           resorts[deviceId].forecast_days?.push(entityId);
@@ -253,7 +265,16 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
     const resorts = this._getResorts(this.hass, this._config);
     const snowEntities = Object.values(resorts)
-      .flatMap((r) => [r.snow_mountain, r.snow_valley, r.new_snow, r.lifts_open, r.slopes_open_km, r.slopes_open])
+      .flatMap((r) => [
+        r.snow_mountain,
+        r.snow_valley,
+        r.new_snow,
+        r.lifts_open,
+        r.slopes_open_km,
+        r.slopes_open,
+        r.classical_trails,
+        r.skating_trails,
+      ])
       .filter(Boolean) as string[];
 
     if (snowEntities.length === 0) return;
@@ -352,6 +373,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
     return ['N/A', 'keine Meldung', 'unknown'].includes(state);
   }
 
+  private _isCrossCountryResort(resort: Resort): boolean {
+    return !!(
+      resort.classical_trails ||
+      resort.skating_trails ||
+      resort.classical_condition ||
+      resort.skating_condition
+    );
+  }
+
   protected render(): TemplateResult {
     if (!this._config || !this.hass) {
       return html``;
@@ -373,20 +403,32 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
         switch (sortBy) {
           case 'mountain':
+            if (this._isCrossCountryResort(a) || this._isCrossCountryResort(b)) break; // Skip for cross-country
             valA = a.snow_mountain ? parseFloat(this.hass.states[a.snow_mountain].state) : NaN;
             valB = b.snow_mountain ? parseFloat(this.hass.states[b.snow_mountain].state) : NaN;
             break;
           case 'valley':
+            if (this._isCrossCountryResort(a) || this._isCrossCountryResort(b)) break; // Skip for cross-country
             valA = a.snow_valley ? parseFloat(this.hass.states[a.snow_valley].state) : NaN;
             valB = b.snow_valley ? parseFloat(this.hass.states[b.snow_valley].state) : NaN;
             break;
           case 'new':
+            if (this._isCrossCountryResort(a) || this._isCrossCountryResort(b)) break; // Skip for cross-country
             valA = a.new_snow ? parseFloat(this.hass.states[a.new_snow].state) : NaN;
             valB = b.new_snow ? parseFloat(this.hass.states[b.new_snow].state) : NaN;
             break;
           case 'lift':
+            if (this._isCrossCountryResort(a) || this._isCrossCountryResort(b)) break; // Skip for cross-country
             valA = a.lifts_open ? parseFloat(this.hass.states[a.lifts_open].state) : NaN;
             valB = b.lifts_open ? parseFloat(this.hass.states[b.lifts_open].state) : NaN;
+            break;
+          case 'classical':
+            valA = a.classical_trails ? parseFloat(this.hass.states[a.classical_trails].state) : NaN;
+            valB = b.classical_trails ? parseFloat(this.hass.states[b.classical_trails].state) : NaN;
+            break;
+          case 'skating':
+            valA = a.skating_trails ? parseFloat(this.hass.states[a.skating_trails].state) : NaN;
+            valB = b.skating_trails ? parseFloat(this.hass.states[b.skating_trails].state) : NaN;
             break;
           case 'update':
             valA = a.last_update ? this.hass.states[a.last_update].state : '0';
@@ -427,6 +469,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
             const resortName = resort.name || device?.name_by_user || device?.name || 'Unknown Resort';
 
+            const operation_status = resort.operation_status ? this.hass.states[resort.operation_status] : undefined;
             const statusState = resort.status ? this.hass.states[resort.status] : undefined;
             const status = statusState?.state ?? 'N/A';
             const link = statusState?.attributes.link as string | undefined;
@@ -445,6 +488,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             const slopes_open = resort.slopes_open ? this.hass.states[resort.slopes_open] : undefined;
             const slopes_total = resort.slopes_total ? this.hass.states[resort.slopes_total] : undefined;
 
+            const classical_trails = resort.classical_trails ? this.hass.states[resort.classical_trails] : undefined;
+            const skating_trails = resort.skating_trails ? this.hass.states[resort.skating_trails] : undefined;
+            const classical_condition = resort.classical_condition
+              ? this.hass.states[resort.classical_condition]
+              : undefined;
+            const skating_condition = resort.skating_condition ? this.hass.states[resort.skating_condition] : undefined;
+
+            const isCrossCountry = this._isCrossCountryResort(resort);
+
             return html`
               <div class="resort" tabindex="0" @click=${() => this._handleMoreInfo(primaryEntity)}>
                 <div class="resort-header">
@@ -459,8 +511,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                   >
                 </div>
 
-                <div class="details">
-                  ${this._config.show_snow
+                <div class=${isCrossCountry ? 'details cross-country-details' : 'details'}>
+                  ${this._config.show_snow && !isCrossCountry
                     ? html`
                         <div
                           class=${classMap({
@@ -474,7 +526,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                             }
                           }}
                         >
-                          <span class="custom-icon">${unsafeSVG(mountainIcon)}</span>
+                          <span class="custom-icon stroke">${unsafeSVG(mountainIcon)}</span>
                           <div class="detail-item-value">
                             ${snow_mountain && !isNaN(parseFloat(snow_mountain.state))
                               ? html`<div class="value-row">
@@ -504,7 +556,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                             }
                           }}
                         >
-                          <span class="custom-icon">${unsafeSVG(valleyIcon)}</span>
+                          <span class="custom-icon stroke">${unsafeSVG(valleyIcon)}</span>
                           <div class="detail-item-value">
                             ${snow_valley && !isNaN(parseFloat(snow_valley.state))
                               ? html`<div class="value-row">
@@ -545,134 +597,216 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                         </div>
                       `
                     : ''}
-                  ${this._config.show_lifts_slopes
+                  ${isCrossCountry
                     ? html`
-                        <div
-                          class=${classMap({
-                            'detail-item': true,
-                            'n-a': !lifts_open || !lifts_total || isNaN(parseFloat(lifts_open.state)),
-                          })}
-                          @click=${(e: Event) => {
-                            e.stopPropagation();
-                            if (lifts_open) {
-                              this._handleMoreInfo(lifts_open.entity_id);
-                            }
-                          }}
-                        >
-                          <ha-icon icon="mdi:gondola"></ha-icon>
-                          <div class="detail-item-value">
-                            ${lifts_open &&
-                            lifts_total &&
-                            !isNaN(parseFloat(lifts_open.state)) &&
-                            !isNaN(parseFloat(lifts_total.state))
-                              ? html`<div class="value-row">
-                                    <span>${lifts_open.state}/${lifts_total.state}</span>
-                                    ${this._renderTrend(lifts_open.entity_id, lifts_open.state)}
-                                  </div>
-                                  ${this._renderProgressBar(
-                                    parseFloat(lifts_open.state),
-                                    parseFloat(lifts_total.state),
-                                  )}`
-                              : html`<span>N/A</span>`}
-                            <span class="detail-item-label"
-                              >${localize(this.hass, 'component.bergfex-card.card.lifts_open')}</span
-                            >
-                          </div>
-                        </div>
-                      `
-                    : ''}
-                  ${this._config.show_lifts_slopes && (slopes_open_km || slopes_total_km || slopes_open || slopes_total)
-                    ? html`
-                        ${slopes_open_km
+                        ${classical_trails
                           ? html`
                               <div
                                 class=${classMap({
                                   'detail-item': true,
-                                  'n-a': !slopes_open_km || isNaN(parseFloat(slopes_open_km.state)),
+                                  'n-a': !classical_trails || isNaN(parseFloat(classical_trails.state)),
                                 })}
                                 @click=${(e: Event) => {
                                   e.stopPropagation();
-                                  if (slopes_open_km) {
-                                    this._handleMoreInfo(slopes_open_km.entity_id);
+                                  if (classical_trails) {
+                                    this._handleMoreInfo(classical_trails.entity_id);
                                   }
                                 }}
                               >
-                                <span class="custom-icon">
-                                  <ha-icon icon="mdi:slope-downhill"></ha-icon>
-                                </span>
+                                <span class="custom-icon fill">${unsafeSVG(classicCrossCountryIcon)}</span>
                                 <div class="detail-item-value">
-                                  ${slopes_open_km && !isNaN(parseFloat(slopes_open_km.state))
+                                  ${classical_trails && !isNaN(parseFloat(classical_trails.state))
                                     ? html`<div class="value-row">
-                                          <span
-                                            >${slopes_open_km.state}${slopes_total_km &&
-                                            !isNaN(parseFloat(slopes_total_km.state))
-                                              ? `/${slopes_total_km.state}`
-                                              : ''}
-                                            ${slopes_open_km.attributes.unit_of_measurement ?? 'km'}</span
-                                          >
-                                          ${this._renderTrend(slopes_open_km.entity_id, slopes_open_km.state)}
-                                        </div>
-                                        ${slopes_total_km && !isNaN(parseFloat(slopes_total_km.state))
-                                          ? this._renderProgressBar(
-                                              parseFloat(slopes_open_km.state),
-                                              parseFloat(slopes_total_km.state),
-                                            )
-                                          : ''}`
+                                        <span
+                                          >${classical_trails.state}
+                                          ${classical_trails.attributes.unit_of_measurement ?? 'km'}</span
+                                        >
+                                        ${this._renderTrend(classical_trails.entity_id, classical_trails.state)}
+                                      </div>`
                                     : html`<span>N/A</span>`}
                                   <span class="detail-item-label"
-                                    >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}</span
+                                    >${localize(this.hass, 'component.bergfex-card.card.header.classical_trails')}</span
                                   >
                                 </div>
                               </div>
                             `
                           : ''}
-                        ${slopes_open && slopes_total
+                        ${skating_trails
                           ? html`
                               <div
                                 class=${classMap({
                                   'detail-item': true,
-                                  'n-a':
-                                    !slopes_open ||
-                                    !slopes_total ||
-                                    isNaN(parseFloat(slopes_open.state)) ||
-                                    isNaN(parseFloat(slopes_total.state)),
+                                  'n-a': !skating_trails || isNaN(parseFloat(skating_trails.state)),
                                 })}
                                 @click=${(e: Event) => {
                                   e.stopPropagation();
-                                  if (slopes_open) {
-                                    this._handleMoreInfo(slopes_open.entity_id);
+                                  if (skating_trails) {
+                                    this._handleMoreInfo(skating_trails.entity_id);
                                   }
                                 }}
                               >
-                                <ha-icon icon="mdi:counter"></ha-icon>
+                                <span class="custom-icon fill">${unsafeSVG(skatingCrossCountryIcon)}</span>
                                 <div class="detail-item-value">
-                                  ${slopes_open &&
-                                  slopes_total &&
-                                  !isNaN(parseFloat(slopes_open.state)) &&
-                                  !isNaN(parseFloat(slopes_total.state))
+                                  ${skating_trails && !isNaN(parseFloat(skating_trails.state))
                                     ? html`<div class="value-row">
-                                          <span>${slopes_open.state}/${slopes_total.state}</span>
-                                          ${this._renderTrend(slopes_open.entity_id, slopes_open.state)}
+                                        <span
+                                          >${skating_trails.state}
+                                          ${skating_trails.attributes.unit_of_measurement ?? 'km'}</span
+                                        >
+                                        ${this._renderTrend(skating_trails.entity_id, skating_trails.state)}
+                                      </div>`
+                                    : html`<span>N/A</span>`}
+                                  <span class="detail-item-label"
+                                    >${localize(this.hass, 'component.bergfex-card.card.header.skating_trails')}</span
+                                  >
+                                </div>
+                              </div>
+                            `
+                          : ''}
+                      `
+                    : html`
+                        ${this._config.show_lifts_slopes
+                          ? html`
+                              <div
+                                class=${classMap({
+                                  'detail-item': true,
+                                  'n-a': !lifts_open || !lifts_total || isNaN(parseFloat(lifts_open.state)),
+                                })}
+                                @click=${(e: Event) => {
+                                  e.stopPropagation();
+                                  if (lifts_open) {
+                                    this._handleMoreInfo(lifts_open.entity_id);
+                                  }
+                                }}
+                              >
+                                <ha-icon icon="mdi:gondola"></ha-icon>
+                                <div class="detail-item-value">
+                                  ${lifts_open &&
+                                  lifts_total &&
+                                  !isNaN(parseFloat(lifts_open.state)) &&
+                                  !isNaN(parseFloat(lifts_total.state))
+                                    ? html`<div class="value-row">
+                                          <span>${lifts_open.state}/${lifts_total.state}</span>
+                                          ${this._renderTrend(lifts_open.entity_id, lifts_open.state)}
                                         </div>
                                         ${this._renderProgressBar(
-                                          parseFloat(slopes_open.state),
-                                          parseFloat(slopes_total.state),
+                                          parseFloat(lifts_open.state),
+                                          parseFloat(lifts_total.state),
                                         )}`
                                     : html`<span>N/A</span>`}
                                   <span class="detail-item-label"
-                                    >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}
-                                    (${localize(this.hass, 'component.bergfex-card.card.header.slopes_total_km')})</span
+                                    >${localize(this.hass, 'component.bergfex-card.card.lifts_open')}</span
                                   >
                                 </div>
                               </div>
                             `
                           : ''}
-                      `
-                    : ''}
+                        ${this._config.show_lifts_slopes &&
+                        (slopes_open_km || slopes_total_km || slopes_open || slopes_total)
+                          ? html`
+                              ${slopes_open_km
+                                ? html`
+                                    <div
+                                      class=${classMap({
+                                        'detail-item': true,
+                                        'n-a': !slopes_open_km || isNaN(parseFloat(slopes_open_km.state)),
+                                      })}
+                                      @click=${(e: Event) => {
+                                        e.stopPropagation();
+                                        if (slopes_open_km) {
+                                          this._handleMoreInfo(slopes_open_km.entity_id);
+                                        }
+                                      }}
+                                    >
+                                      <span class="custom-icon stroke">
+                                        <ha-icon icon="mdi:slope-downhill"></ha-icon>
+                                      </span>
+                                      <div class="detail-item-value">
+                                        ${slopes_open_km && !isNaN(parseFloat(slopes_open_km.state))
+                                          ? html`<div class="value-row">
+                                                <span
+                                                  >${slopes_open_km.state}${slopes_total_km &&
+                                                  !isNaN(parseFloat(slopes_total_km.state))
+                                                    ? `/${slopes_total_km.state}`
+                                                    : ''}
+                                                  ${slopes_open_km.attributes.unit_of_measurement ?? 'km'}</span
+                                                >
+                                                ${this._renderTrend(slopes_open_km.entity_id, slopes_open_km.state)}
+                                              </div>
+                                              ${slopes_total_km && !isNaN(parseFloat(slopes_total_km.state))
+                                                ? this._renderProgressBar(
+                                                    parseFloat(slopes_open_km.state),
+                                                    parseFloat(slopes_total_km.state),
+                                                  )
+                                                : ''}`
+                                          : html`<span>N/A</span>`}
+                                        <span class="detail-item-label"
+                                          >${localize(
+                                            this.hass,
+                                            'component.bergfex-card.card.header.slopes_info',
+                                          )}</span
+                                        >
+                                      </div>
+                                    </div>
+                                  `
+                                : ''}
+                              ${slopes_open && slopes_total
+                                ? html`
+                                    <div
+                                      class=${classMap({
+                                        'detail-item': true,
+                                        'n-a':
+                                          !slopes_open ||
+                                          !slopes_total ||
+                                          isNaN(parseFloat(slopes_open.state)) ||
+                                          isNaN(parseFloat(slopes_total.state)),
+                                      })}
+                                      @click=${(e: Event) => {
+                                        e.stopPropagation();
+                                        if (slopes_open) {
+                                          this._handleMoreInfo(slopes_open.entity_id);
+                                        }
+                                      }}
+                                    >
+                                      <ha-icon icon="mdi:counter"></ha-icon>
+                                      <div class="detail-item-value">
+                                        ${slopes_open &&
+                                        slopes_total &&
+                                        !isNaN(parseFloat(slopes_open.state)) &&
+                                        !isNaN(parseFloat(slopes_total.state))
+                                          ? html`<div class="value-row">
+                                                <span>${slopes_open.state}/${slopes_total.state}</span>
+                                                ${this._renderTrend(slopes_open.entity_id, slopes_open.state)}
+                                              </div>
+                                              ${this._renderProgressBar(
+                                                parseFloat(slopes_open.state),
+                                                parseFloat(slopes_total.state),
+                                              )}`
+                                          : html`<span>N/A</span>`}
+                                        <span class="detail-item-label"
+                                          >${localize(this.hass, 'component.bergfex-card.card.header.slopes_info')}
+                                          (${localize(
+                                            this.hass,
+                                            'component.bergfex-card.card.header.slopes_total_km',
+                                          )})</span
+                                        >
+                                      </div>
+                                    </div>
+                                  `
+                                : ''}
+                            `
+                          : ''}
+                      `}
                 </div>
 
                 ${this._config.show_conditions &&
-                (snow_condition || slope_condition || avalanche_warning || last_snowfall)
+                (snow_condition ||
+                  slope_condition ||
+                  avalanche_warning ||
+                  last_snowfall ||
+                  operation_status ||
+                  classical_condition ||
+                  skating_condition)
                   ? html`
                       <div class="accordion-container">
                         <div
@@ -689,7 +823,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                         ${this._accordionState[resortId] === 'conditions'
                           ? html`
                               <div class="accordion-content details">
-                                ${this._config.show_conditions && (snow_condition || slope_condition)
+                                ${this._config.show_conditions && (snow_condition || slope_condition) && !isCrossCountry
                                   ? html`
                                       ${snow_condition
                                         ? html`
@@ -747,7 +881,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                         : ''}
                                     `
                                   : ''}
-                                ${this._config.show_conditions && avalanche_warning
+                                ${this._config.show_conditions && avalanche_warning && !isCrossCountry
                                   ? html`
                                       <div
                                         class=${classMap({
@@ -774,6 +908,68 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                       </div>
                                     `
                                   : ''}
+                                ${this._config.show_conditions && (classical_condition || skating_condition)
+                                  ? html`
+                                      ${classical_condition
+                                        ? html`
+                                            <div
+                                              class=${classMap({
+                                                'detail-item': true,
+                                                'n-a': this._isNA(classical_condition.state),
+                                              })}
+                                              @click=${(e: Event) => {
+                                                e.stopPropagation();
+                                                if (classical_condition) {
+                                                  this._handleMoreInfo(classical_condition.entity_id);
+                                                }
+                                              }}
+                                            >
+                                              <span class="custom-icon fill"
+                                                >${unsafeSVG(classicCrossCountryIcon)}</span
+                                              >
+                                              <div class="detail-item-value">
+                                                <span>${classical_condition.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${localize(
+                                                    this.hass,
+                                                    'component.bergfex-card.card.header.classical_condition',
+                                                  )}</span
+                                                >
+                                              </div>
+                                            </div>
+                                          `
+                                        : ''}
+                                      ${skating_condition
+                                        ? html`
+                                            <div
+                                              class=${classMap({
+                                                'detail-item': true,
+                                                'n-a': this._isNA(skating_condition.state),
+                                              })}
+                                              @click=${(e: Event) => {
+                                                e.stopPropagation();
+                                                if (skating_condition) {
+                                                  this._handleMoreInfo(skating_condition.entity_id);
+                                                }
+                                              }}
+                                            >
+                                              <span class="custom-icon fill"
+                                                >${unsafeSVG(skatingCrossCountryIcon)}</span
+                                              >
+                                              <div class="detail-item-value">
+                                                <span>${skating_condition.state}</span>
+                                                <span class="detail-item-label"
+                                                  >${localize(
+                                                    this.hass,
+                                                    'component.bergfex-card.card.header.skating_condition',
+                                                  )}</span
+                                                >
+                                              </div>
+                                            </div>
+                                          `
+                                        : ''}
+                                    `
+                                  : ''}
                                 ${last_snowfall
                                   ? html`
                                       <div
@@ -793,6 +989,33 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                             >${localize(
                                               this.hass,
                                               'component.bergfex-card.card.header.last_snowfall',
+                                            )}</span
+                                          >
+                                        </div>
+                                      </div>
+                                    `
+                                  : ''}
+                                ${this._config.show_conditions && operation_status
+                                  ? html`
+                                      <div
+                                        class=${classMap({
+                                          'detail-item': true,
+                                          'n-a': this._isNA(operation_status.state),
+                                        })}
+                                        @click=${(e: Event) => {
+                                          e.stopPropagation();
+                                          if (operation_status) {
+                                            this._handleMoreInfo(operation_status.entity_id);
+                                          }
+                                        }}
+                                      >
+                                        <ha-icon icon="mdi:information-outline"></ha-icon>
+                                        <div class="detail-item-value">
+                                          <span>${operation_status.state}</span>
+                                          <span class="detail-item-label"
+                                            >${localize(
+                                              this.hass,
+                                              'component.bergfex-card.card.header.operation_status',
                                             )}</span
                                           >
                                         </div>
