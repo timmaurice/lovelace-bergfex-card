@@ -6,6 +6,8 @@ import { HomeAssistant, BergfexCardConfig } from '../src/types';
 
 vi.mock('../src/svg/mountain-peak.svg', () => ({ default: '' }));
 vi.mock('../src/svg/mountain-valley.svg', () => ({ default: '' }));
+vi.mock('../src/svg/classic-cross-country-skiing.svg', () => ({ default: '' }));
+vi.mock('../src/svg/skating-cross-country-skiing.svg', () => ({ default: '' }));
 
 vi.mock('../src/localize.ts', () => ({
   localize: (_hass: unknown, key: string) => {
@@ -47,6 +49,15 @@ const createMockResort = (
     slopes_total_km?: string;
     forecast_days?: boolean;
     forecast_summaries?: boolean;
+    operation_status?: string;
+    classical_trails?: string;
+    skating_trails?: string;
+    classical_condition?: string;
+    skating_condition?: string;
+    slope_condition?: string;
+    snow_condition?: string;
+    last_snowfall?: string;
+    avalanche_warning?: string;
   },
 ) => {
   const device_id = `device-${id}`;
@@ -72,6 +83,7 @@ const createMockResort = (
   };
 
   createEntity('status', data.status, undefined, { link: data.link });
+  if (data.operation_status) createEntity('operation_status', data.operation_status);
   if (data.snow_valley) createEntity('snow_valley', data.snow_valley, 'cm');
   if (data.snow_mountain) createEntity('snow_mountain', data.snow_mountain, 'cm');
   if (data.new_snow) createEntity('new_snow', data.new_snow, 'cm');
@@ -79,6 +91,14 @@ const createMockResort = (
   if (data.lifts_total) createEntity('lifts_total', data.lifts_total);
   if (data.slopes_open_km) createEntity('slopes_open_km', data.slopes_open_km, 'km');
   if (data.slopes_total_km) createEntity('slopes_total_km', data.slopes_total_km, 'km');
+  if (data.classical_trails) createEntity('classical_trails', data.classical_trails, 'km');
+  if (data.skating_trails) createEntity('skating_trails', data.skating_trails, 'km');
+  if (data.classical_condition) createEntity('classical_condition', data.classical_condition);
+  if (data.skating_condition) createEntity('skating_condition', data.skating_condition);
+  if (data.slope_condition) createEntity('slope_condition', data.slope_condition);
+  if (data.snow_condition) createEntity('snow_condition', data.snow_condition);
+  if (data.last_snowfall) createEntity('last_snowfall', data.last_snowfall);
+  if (data.avalanche_warning) createEntity('avalanche_warning', data.avalanche_warning);
   createEntity('last_update', new Date().toISOString());
 
   if (data.forecast_days) {
@@ -437,6 +457,83 @@ describe('BergfexCard', () => {
 
       const trendIcon = element.shadowRoot?.querySelector('.trend-icon');
       expect(trendIcon).toBeNull();
+    });
+  });
+
+  describe('Cross-Country Resorts', () => {
+    it('should render cross-country details correctly', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        classical_trails: '15',
+        skating_trails: '10',
+        classical_condition: 'Good',
+        skating_condition: 'Freshly Prepared',
+        operation_status: 'Partly open',
+      };
+      const resort = createMockResort('xc-resort', 'XC Paradise', resortData);
+      await setupCard({ show_lifts_slopes: true, show_conditions: true }, resort);
+
+      const resortEl = element.shadowRoot?.querySelector('.resort');
+      expect(resortEl).not.toBeNull();
+
+      expect(resortEl?.querySelector('.resort-name')?.textContent).toBe('XC Paradise');
+      expect(resortEl?.querySelector('.resort-status')?.textContent).toBe('Open');
+
+      const detailItems = element.shadowRoot?.querySelectorAll('.detail-item');
+      expect(detailItems.length).toBe(2); // classical and skating trails
+
+      // Check for trail details instead of snow/lifts
+      const classicalTrailItem = Array.from(detailItems).find((item) => item.textContent?.includes('Classical Trails'));
+      expect(classicalTrailItem).not.toBeUndefined();
+      expect(classicalTrailItem?.textContent?.replace(/\s+/g, ' ').trim()).toContain('15 km');
+
+      const skatingTrailItem = Array.from(detailItems).find((item) => item.textContent?.includes('Skating Trails'));
+      expect(skatingTrailItem).not.toBeUndefined();
+      expect(skatingTrailItem?.textContent?.replace(/\s+/g, ' ').trim()).toContain('10 km');
+
+      // Check that ski resort details are NOT present
+      expect(element.shadowRoot?.textContent).not.toContain('Snow Mountain');
+      expect(element.shadowRoot?.textContent).not.toContain('Lifts');
+
+      // Check conditions accordion
+      const accordionHeaders = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const conditionsHeader = accordionHeaders.find((h) => h.textContent?.includes('Conditions')) as HTMLElement;
+      conditionsHeader?.click();
+      await element.updateComplete;
+
+      const accordionContent = conditionsHeader.nextElementSibling;
+      expect(accordionContent?.textContent).toContain('Good'); // classical_condition
+      expect(accordionContent?.textContent).toContain('Freshly Prepared'); // skating_condition
+      expect(accordionContent?.textContent).toContain('Partly open'); // operation_status
+      expect(accordionContent?.textContent).not.toContain('Slope Condition');
+    });
+
+    it('should not render snow details for cross-country resorts even if show_snow is true', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        classical_trails: '15',
+        snow_mountain: '50', // This data exists but should not be shown
+      };
+      const resort = createMockResort('xc-resort', 'XC Paradise', resortData);
+      await setupCard({ show_snow: true }, resort);
+
+      const snowDetail = Array.from(element.shadowRoot?.querySelectorAll('.detail-item') || []).find((item) =>
+        item.textContent?.includes('Snow Mountain'),
+      );
+      expect(snowDetail).toBeUndefined();
+    });
+
+    it('should sort cross-country resorts by trail length', async () => {
+      const resort1 = createMockResort('resort1', 'Resort A', { status: 'Open', classical_trails: '20' });
+      const resort2 = createMockResort('resort2', 'Resort B', { status: 'Open', classical_trails: '10' });
+
+      await setupCard({ sort_by: 'classical' }, resort1, resort2);
+
+      const resortEls = element.shadowRoot?.querySelectorAll('.resort .resort-name');
+      expect(resortEls?.length).toBe(2);
+      // Bigger should be first
+      expect(resortEls?.[0].textContent).toBe('Resort A'); // 20km
+      expect(resortEls?.[1].textContent).toBe('Resort B'); // 10km
     });
   });
 });
