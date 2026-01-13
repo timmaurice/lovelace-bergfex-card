@@ -54,6 +54,10 @@
   gap: 8px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   padding-top: 12px;
+
+  &.cross-country-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .detail-item {
@@ -78,8 +82,15 @@
 
   svg {
     height: 100%;
-    stroke: var(--secondary-text-color);
     width: 100%;
+  }
+
+  &.stroke svg {
+    stroke: var(--secondary-text-color);
+  }
+
+  &.fill svg {
+    fill: var(--secondary-text-color);
   }
 }
 

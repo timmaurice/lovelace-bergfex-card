@@ -1,4 +1,4 @@
-function t(t,e,s,o){var i,n=arguments.length,a=n<3?e:null===o?o=Object.getOwnPropertyDescriptor(e,s):o;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)a=Reflect.decorate(t,e,s,o);else for(var r=t.length-1;r>=0;r--)(i=t[r])&&(a=(n<3?i(a):n>3?i(e,s,a):i(e,s))||a);return n>3&&a&&Object.defineProperty(e,s,a),a}console.groupCollapsed("%c🏔️ BERGFEX CARD%cv1.2.0","color: orange; font-weight: bold; background: black; padding: 2px 4px; border-radius: 2px 0 0 2px;","color: white; font-weight: bold; background: dimgray; padding: 2px 4px; border-radius: 0 2px 2px 0;"),console.info("A Lovelace card to display ski resort conditions from Bergfex."),console.info("Github:  https://github.com/timmaurice/lovelace-bergfex-card.git"),console.info("Sponsor: https://buymeacoffee.com/timmaurice"),console.groupEnd(),"function"==typeof SuppressedError&&SuppressedError;
+function t(t,e,s,i){var o,a=arguments.length,n=a<3?e:null===i?i=Object.getOwnPropertyDescriptor(e,s):i;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(t,e,s,i);else for(var r=t.length-1;r>=0;r--)(o=t[r])&&(n=(a<3?o(n):a>3?o(e,s,n):o(e,s))||n);return a>3&&n&&Object.defineProperty(e,s,n),n}console.groupCollapsed("%c🏔️ BERGFEX CARD%cv2.0.0","color: orange; font-weight: bold; background: black; padding: 2px 4px; border-radius: 2px 0 0 2px;","color: white; font-weight: bold; background: dimgray; padding: 2px 4px; border-radius: 0 2px 2px 0;"),console.info("A Lovelace card to display ski resort conditions from Bergfex."),console.info("Github:  https://github.com/timmaurice/lovelace-bergfex-card.git"),console.info("Sponsor: https://buymeacoffee.com/timmaurice"),console.groupEnd(),"function"==typeof SuppressedError&&SuppressedError;
 /**
  * @license
  * Copyright 2019 Google LLC
@@ -31,23 +31,23 @@ const lt=t=>(e,s)=>{void 0!==s?s.addInitializer(()=>{customElements.define(t,e)}
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */function pt(t){return(e,s)=>"object"==typeof s?ht(t,e,s):((t,e,s)=>{const o=e.hasOwnProperty(s);return e.constructor.createProperty(s,t),o?Object.getOwnPropertyDescriptor(e,s):void 0})(t,e,s)}
+ */function pt(t){return(e,s)=>"object"==typeof s?ht(t,e,s):((t,e,s)=>{const i=e.hasOwnProperty(s);return e.constructor.createProperty(s,t),i?Object.getOwnPropertyDescriptor(e,s):void 0})(t,e,s)}
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */function ut(t){return pt({...t,state:!0,attribute:!1})}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
+ */function _t(t){return pt({...t,state:!0,attribute:!1})}
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const _t=1,ft=2,gt=t=>(...e)=>({_$litDirective$:t,values:e});class mt{constructor(t){}get _$AU(){return this._$AM._$AU}_$AT(t,e,s){this._$Ct=t,this._$AM=e,this._$Ci=s}_$AS(t,e){return this.update(t,e)}update(t,e){return this.render(...e)}}
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const ut=1,ft=2,gt=t=>(...e)=>({_$litDirective$:t,values:e});class mt{constructor(t){}get _$AU(){return this._$AM._$AU}_$AT(t,e,s){this._$Ct=t,this._$AM=e,this._$Ci=s}_$AS(t,e){return this.update(t,e)}update(t,e){return this.render(...e)}}
 /**
  * @license
  * Copyright 2018 Google LLC
@@ -72,41 +72,41 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
         <div class="card-content">
           ${t.map(([t,e])=>{const s=e.status;if(!s)return W`
                 <div class="warning">
-                  ${At(this.hass,"component.bergfex-card.card.resort_not_found",{resort:t})}
+                  ${kt(this.hass,"component.bergfex-card.card.resort_not_found",{resort:t})}
                 </div>
               `;const o=this.hass.devices[t],i=e.name||o?.name_by_user||o?.name||"Unknown Resort",n=e.status?this.hass.states[e.status]:void 0,a=n?.state??"N/A",r=n?.attributes.link,c=e.snow_valley?this.hass.states[e.snow_valley]:void 0,l=e.snow_mountain?this.hass.states[e.snow_mountain]:void 0,d=e.new_snow?this.hass.states[e.new_snow]:void 0,h=e.lifts_open?this.hass.states[e.lifts_open]:void 0,p=e.lifts_total?this.hass.states[e.lifts_total]:void 0,u=e.last_update?this.hass.states[e.last_update]:void 0,_=e.snow_condition?this.hass.states[e.snow_condition]:void 0,f=e.slope_condition?this.hass.states[e.slope_condition]:void 0,g=e.last_snowfall?this.hass.states[e.last_snowfall]:void 0,m=e.avalanche_warning?this.hass.states[e.avalanche_warning]:void 0,v=e.slopes_open_km?this.hass.states[e.slopes_open_km]:void 0,y=e.slopes_total_km?this.hass.states[e.slopes_total_km]:void 0,w=e.slopes_open?this.hass.states[e.slopes_open]:void 0,$=e.slopes_total?this.hass.states[e.slopes_total]:void 0;return W`
               <div class="resort" tabindex="0" @click=${()=>this._handleMoreInfo(s)}>
                 <div class="resort-header">
-                  <span class="resort-name">${i}</span>
+                  <span class="resort-name">${o}</span>
                   <span
-                    class=${vt({"resort-status":!0,open:"open"===a.toLowerCase(),closed:"closed"===a.toLowerCase()})}
-                    >${a}</span
+                    class=${vt({"resort-status":!0,open:"open"===(c||"").toLowerCase(),closed:"closed"===(c||"").toLowerCase()})}
+                    >${d}</span
                   >
                 </div>
 
                 <div class="details">
                   ${this._config.show_snow?W`
                         <div
-                          class=${vt({"detail-item":!0,"n-a":!l||isNaN(parseFloat(l.state))})}
-                          @click=${t=>{t.stopPropagation(),l&&this._handleMoreInfo(l.entity_id)}}
+                          class=${vt({"detail-item":!0,"n-a":!_||isNaN(parseFloat(_.state))})}
+                          @click=${t=>{t.stopPropagation(),_&&this._handleMoreInfo(_.entity_id)}}
                         >
                           <span class="custom-icon">${$t('<?xml version="1.0" encoding="utf-8"?>\n\x3c!-- License: MIT. Made by Lucide Contributors: https://lucide.dev/ --\x3e\n<svg \n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="#000000"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  \x3c!-- Mountain --\x3e\n  <path d="M8 3l4 8 5-5 5 15H2L8 3z" />\n  <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />\n\n  \x3c!-- Left-pointing arrow further right from first peak --\x3e\n  <g stroke-width="1">\n    <line x1="15" y1="3" x2="10" y2="3" />\n    <polyline points="12,1 10,3 12,5" />\n  </g>\n</svg>')}</span>
                           <div class="detail-item-value">
                             ${l&&!isNaN(parseFloat(l.state))?W`<div class="value-row">
                                   <span
-                                    >${l.state} ${l.attributes.unit_of_measurement??""}</span
+                                    >${_.state} ${_.attributes.unit_of_measurement??""}</span
                                   >
                                   ${this._renderTrend(l.entity_id,l.state)}
                                 </div>`:W`<span>N/A</span>`}
                             <span class="detail-item-label"
-                              >${At(this.hass,"component.bergfex-card.card.header.snow_mountain")}
-                              ${l?.attributes.elevation?`(${l.attributes.elevation}m)`:""}</span
+                              >${kt(this.hass,"component.bergfex-card.card.header.snow_mountain")}
+                              ${_?.attributes.elevation?`(${_.attributes.elevation}m)`:""}</span
                             >
                           </div>
                         </div>
                         <div
-                          class=${vt({"detail-item":!0,"n-a":!c||isNaN(parseFloat(c.state))})}
-                          @click=${t=>{t.stopPropagation(),c&&this._handleMoreInfo(c.entity_id)}}
+                          class=${vt({"detail-item":!0,"n-a":!p||isNaN(parseFloat(p.state))})}
+                          @click=${t=>{t.stopPropagation(),p&&this._handleMoreInfo(p.entity_id)}}
                         >
                           <span class="custom-icon">${$t('<?xml version="1.0" encoding="utf-8"?>\n\x3c!-- License: MIT. Made by Lucide Contributors: https://lucide.dev/ --\x3e\n<svg \n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="#000000"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M8 3l4 8 5-5 5 15H2L8 3z" />\n  <path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19" />\n\n  <g stroke-width="1">\n    <line x1="5" y1="17.5" x2="10" y2="17.5" />\n    <polyline points="8,15.5 5,17.5 8,19.5" />\n  </g>\n</svg>')}</span>
                           <div class="detail-item-value">
@@ -115,14 +115,14 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                   ${this._renderTrend(c.entity_id,c.state)}
                                 </div>`:W`<span>N/A</span>`}
                             <span class="detail-item-label"
-                              >${At(this.hass,"component.bergfex-card.card.header.snow_valley")}
-                              ${c?.attributes.elevation?`(${c.attributes.elevation}m)`:""}</span
+                              >${kt(this.hass,"component.bergfex-card.card.header.snow_valley")}
+                              ${p?.attributes.elevation?`(${p.attributes.elevation}m)`:""}</span
                             >
                           </div>
                         </div>
                         <div
-                          class=${vt({"detail-item":!0,"n-a":!d||isNaN(parseFloat(d.state))})}
-                          @click=${t=>{t.stopPropagation(),d&&this._handleMoreInfo(d.entity_id)}}
+                          class=${vt({"detail-item":!0,"n-a":!u||isNaN(parseFloat(u.state))})}
+                          @click=${t=>{t.stopPropagation(),u&&this._handleMoreInfo(u.entity_id)}}
                         >
                           <ha-icon icon="mdi:weather-snowy-heavy"></ha-icon>
                           <div class="detail-item-value">
@@ -131,7 +131,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                   ${this._renderTrend(d.entity_id,d.state)}
                                 </div>`:W`<span>N/A</span>`}
                             <span class="detail-item-label"
-                              >${At(this.hass,"component.bergfex-card.card.header.new_snow")}</span
+                              >${kt(this.hass,"component.bergfex-card.card.header.new_snow")}</span
                             >
                           </div>
                         </div>
@@ -157,12 +157,10 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                   ${this._config.show_lifts_slopes&&(v||y||w||$)?W`
                         ${v?W`
                               <div
-                                class=${vt({"detail-item":!0,"n-a":!v||isNaN(parseFloat(v.state))})}
-                                @click=${t=>{t.stopPropagation(),v&&this._handleMoreInfo(v.entity_id)}}
+                                class=${vt({"detail-item":!0,"n-a":!x||isNaN(parseFloat(x.state))})}
+                                @click=${t=>{t.stopPropagation(),x&&this._handleMoreInfo(x.entity_id)}}
                               >
-                                <span class="custom-icon">
-                                  <ha-icon icon="mdi:slope-downhill"></ha-icon>
-                                </span>
+                                <span class="custom-icon fill">${bt(Ct)}</span>
                                 <div class="detail-item-value">
                                   ${v&&!isNaN(parseFloat(v.state))?W`<div class="value-row">
                                           <span
@@ -173,7 +171,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                         </div>
                                         ${y&&!isNaN(parseFloat(y.state))?this._renderProgressBar(parseFloat(v.state),parseFloat(y.state)):""}`:W`<span>N/A</span>`}
                                   <span class="detail-item-label"
-                                    >${At(this.hass,"component.bergfex-card.card.header.slopes_info")}</span
+                                    >${kt(this.hass,"component.bergfex-card.card.header.classical_trails")}</span
                                   >
                                 </div>
                               </div>
@@ -183,7 +181,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                 class=${vt({"detail-item":!0,"n-a":!w||!$||isNaN(parseFloat(w.state))||isNaN(parseFloat($.state))})}
                                 @click=${t=>{t.stopPropagation(),w&&this._handleMoreInfo(w.entity_id)}}
                               >
-                                <ha-icon icon="mdi:counter"></ha-icon>
+                                <span class="custom-icon fill">${bt(Et)}</span>
                                 <div class="detail-item-value">
                                   ${w&&$&&!isNaN(parseFloat(w.state))&&!isNaN(parseFloat($.state))?W`<div class="value-row">
                                           <span>${w.state}/${$.state}</span>
@@ -191,13 +189,81 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                         </div>
                                         ${this._renderProgressBar(parseFloat(w.state),parseFloat($.state))}`:W`<span>N/A</span>`}
                                   <span class="detail-item-label"
-                                    >${At(this.hass,"component.bergfex-card.card.header.slopes_info")}
-                                    (${At(this.hass,"component.bergfex-card.card.header.slopes_total_km")})</span
+                                    >${kt(this.hass,"component.bergfex-card.card.header.skating_trails")}</span
                                   >
                                 </div>
                               </div>
                             `:""}
-                      `:""}
+                      `:B`
+                        ${this._config.show_lifts_slopes?B`
+                              <div
+                                class=${vt({"detail-item":!0,"n-a":!f||isNaN(parseFloat(f.state))||isNaN(parseFloat(String(z??NaN)))})}
+                                @click=${t=>{t.stopPropagation(),f&&this._handleMoreInfo(f.entity_id)}}
+                              >
+                                <ha-icon icon="mdi:gondola"></ha-icon>
+                                <div class="detail-item-value">
+                                  ${f&&!isNaN(parseFloat(f.state))?(()=>{const t=parseFloat(f.state),e=z?parseFloat(String(z)):NaN;return isNaN(e)?B`<div class="value-row">
+                                          <span>${f.state}</span>
+                                          ${this._renderTrend(f.entity_id,f.state)}
+                                        </div>`:B`<div class="value-row">
+                                              <span>${t}/${e}</span>
+                                              ${this._renderTrend(f.entity_id,f.state)}
+                                            </div>
+                                            ${this._renderProgressBar(t,e)}`})():B`<span>N/A</span>`}
+                                  <span class="detail-item-label"
+                                    >${kt(this.hass,"component.bergfex-card.card.lifts_open")}</span
+                                  >
+                                </div>
+                              </div>
+                            `:""}
+                        ${this._config.show_lifts_slopes&&(b||w)?B`
+                              ${b?B`
+                                    <div
+                                      class=${vt({"detail-item":!0,"n-a":!b||isNaN(parseFloat(b.state))})}
+                                      @click=${t=>{t.stopPropagation(),b&&this._handleMoreInfo(b.entity_id)}}
+                                    >
+                                      <span class="custom-icon stroke">
+                                        <ha-icon icon="mdi:slope-downhill"></ha-icon>
+                                      </span>
+                                      <div class="detail-item-value">
+                                        ${b&&!isNaN(parseFloat(b.state))?(()=>{const t=parseFloat(b.state),e=L?parseFloat(String(L)):NaN,s=b.attributes.unit_of_measurement??"km";return isNaN(e)?B`<div class="value-row">
+                                                <span>${b.state} ${s}</span>
+                                                ${this._renderTrend(b.entity_id,b.state)}
+                                              </div>`:B`<div class="value-row">
+                                                    <span>${t}/${e} ${s}</span>
+                                                    ${this._renderTrend(b.entity_id,b.state)}
+                                                  </div>
+                                                  ${this._renderProgressBar(t,e)}`})():B`<span>N/A</span>`}
+                                        <span class="detail-item-label"
+                                          >${kt(this.hass,"component.bergfex-card.card.header.slopes_info")}</span
+                                        >
+                                      </div>
+                                    </div>
+                                  `:""}
+                              ${w&&H?B`
+                                    <div
+                                      class=${vt({"detail-item":!0,"n-a":!w||isNaN(parseFloat(w.state))||isNaN(parseFloat(String(H??NaN)))})}
+                                      @click=${t=>{t.stopPropagation(),w&&this._handleMoreInfo(w.entity_id)}}
+                                    >
+                                      <ha-icon icon="mdi:counter"></ha-icon>
+                                      <div class="detail-item-value">
+                                        ${w&&!isNaN(parseFloat(w.state))?(()=>{const t=parseFloat(w.state),e=H?parseFloat(String(H)):NaN;return isNaN(e)?B`<div class="value-row">
+                                                <span>${w.state}</span>
+                                                ${this._renderTrend(w.entity_id,w.state)}
+                                              </div>`:B`<div class="value-row">
+                                                    <span>${t}/${e}</span>
+                                                    ${this._renderTrend(w.entity_id,w.state)}
+                                                  </div>
+                                                  ${this._renderProgressBar(t,e)}`})():B`<span>N/A</span>`}
+                                        <span class="detail-item-label"
+                                          >${kt(this.hass,"component.bergfex-card.card.header.slopes_info")}
+                                          (${kt(this.hass,"component.bergfex-card.card.header.slopes_total")})</span
+                                        >
+                                      </div>
+                                    </div>
+                                  `:""}
+                            `:""}
+                      `}
                 </div>
 
                 ${this._config.show_conditions&&(_||f||m||g)?W`
@@ -206,7 +272,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                           class="accordion-header"
                           @click=${e=>this._toggleAccordion(t,"conditions",e)}
                         >
-                          <span>${At(this.hass,"component.bergfex-card.card.accordion.conditions")}</span>
+                          <span>${kt(this.hass,"component.bergfex-card.card.accordion.conditions")}</span>
                           <ha-icon
                             icon=${"conditions"===this._accordionState[t]?"mdi:chevron-up":"mdi:chevron-down"}
                           ></ha-icon>
@@ -216,28 +282,28 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                 ${this._config.show_conditions&&(_||f)?W`
                                       ${_?W`
                                             <div
-                                              class=${vt({"detail-item":!0,"n-a":this._isNA(_.state)})}
-                                              @click=${t=>{t.stopPropagation(),_&&this._handleMoreInfo(_.entity_id)}}
+                                              class=${vt({"detail-item":!0,"n-a":this._isNA(m.state)})}
+                                              @click=${t=>{t.stopPropagation(),m&&this._handleMoreInfo(m.entity_id)}}
                                             >
                                               <ha-icon icon="mdi:weather-snowy"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${_.state}</span>
+                                                <span>${m.state}</span>
                                                 <span class="detail-item-label"
-                                                  >${At(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
+                                                  >${kt(this.hass,"component.bergfex-card.card.header.snow_condition")}</span
                                                 >
                                               </div>
                                             </div>
                                           `:""}
                                       ${f?W`
                                             <div
-                                              class=${vt({"detail-item":!0,"n-a":this._isNA(f.state)})}
-                                              @click=${t=>{t.stopPropagation(),f&&this._handleMoreInfo(f.entity_id)}}
+                                              class=${vt({"detail-item":!0,"n-a":this._isNA(v.state)})}
+                                              @click=${t=>{t.stopPropagation(),v&&this._handleMoreInfo(v.entity_id)}}
                                             >
                                               <ha-icon icon="mdi:ski"></ha-icon>
                                               <div class="detail-item-value">
-                                                <span>${f.state}</span>
+                                                <span>${v.state}</span>
                                                 <span class="detail-item-label"
-                                                  >${At(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
+                                                  >${kt(this.hass,"component.bergfex-card.card.header.slope_condition")}</span
                                                 >
                                               </div>
                                             </div>
@@ -245,28 +311,42 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                     `:""}
                                 ${this._config.show_conditions&&m?W`
                                       <div
-                                        class=${vt({"detail-item":!0,"n-a":this._isNA(m.state)})}
-                                        @click=${t=>{t.stopPropagation(),m&&this._handleMoreInfo(m.entity_id)}}
+                                        class=${vt({"detail-item":!0,"n-a":this._isNA(y.state)})}
+                                        @click=${t=>{t.stopPropagation(),y&&this._handleMoreInfo(y.entity_id)}}
                                       >
                                         <ha-icon icon="mdi:alert"></ha-icon>
                                         <div class="detail-item-value">
-                                          <span>${m.state}</span>
+                                          <span>${y.state}</span>
                                           <span class="detail-item-label"
-                                            >${At(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
+                                            >${kt(this.hass,"component.bergfex-card.card.header.avalanche_warning")}</span
                                           >
                                         </div>
                                       </div>
                                     `:""}
                                 ${g?W`
                                       <div
-                                        class=${vt({"detail-item":!0,"n-a":this._isNA(g.state)})}
-                                        @click=${t=>{t.stopPropagation(),this._handleMoreInfo(g.entity_id)}}
+                                        class=${vt({"detail-item":!0,"n-a":this._isNA($.state)})}
+                                        @click=${t=>{t.stopPropagation(),this._handleMoreInfo($.entity_id)}}
                                       >
                                         <ha-icon icon="mdi:calendar-clock"></ha-icon>
                                         <div class="detail-item-value">
-                                          <span>${g.state}</span>
+                                          <span>${$.state}</span>
                                           <span class="detail-item-label"
-                                            >${At(this.hass,"component.bergfex-card.card.header.last_snowfall")}</span
+                                            >${kt(this.hass,"component.bergfex-card.card.header.last_snowfall")}</span
+                                          >
+                                        </div>
+                                      </div>
+                                    `:""}
+                                ${this._config.show_conditions&&a?B`
+                                      <div
+                                        class=${vt({"detail-item":!0,"n-a":this._isNA(a.state)})}
+                                        @click=${t=>{t.stopPropagation(),a&&this._handleMoreInfo(a.entity_id)}}
+                                      >
+                                        <ha-icon icon="mdi:information-outline"></ha-icon>
+                                        <div class="detail-item-value">
+                                          <span>${a.state}</span>
+                                          <span class="detail-item-label"
+                                            >${kt(this.hass,"component.bergfex-card.card.header.operation_status")}</span
                                           >
                                         </div>
                                       </div>
@@ -281,7 +361,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                         class="accordion-header"
                         @click=${e=>this._toggleAccordion(t,"forecast",e)}
                       >
-                        <span>${At(this.hass,"component.bergfex-card.card.accordion.forecast")}</span>
+                        <span>${kt(this.hass,"component.bergfex-card.card.accordion.forecast")}</span>
                         <ha-icon
                           icon=${"forecast"===this._accordionState[t]?"mdi:chevron-up":"mdi:chevron-down"}
                         ></ha-icon>
@@ -294,7 +374,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                         class="forecast-tab ${this._forecastState[t]&&"daily"!==this._forecastState[t].tab?"":"active"}"
                                         @click=${e=>this._handleTabChange(t,"daily",e)}
                                       >
-                                        ${At(this.hass,"component.bergfex-card.card.forecast.daily")}
+                                        ${kt(this.hass,"component.bergfex-card.card.forecast.daily")}
                                       </div>
                                     `:""}
                                 ${o?W`
@@ -302,7 +382,7 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                         class="forecast-tab ${"summary"===this._forecastState[t]?.tab?"active":""}"
                                         @click=${e=>this._handleTabChange(t,"summary",e)}
                                       >
-                                        ${At(this.hass,"component.bergfex-card.card.forecast.summary")}
+                                        ${kt(this.hass,"component.bergfex-card.card.forecast.summary")}
                                       </div>
                                     `:""}
                               </div>
@@ -314,23 +394,23 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                                             src="${r}"
                                             class="forecast-image"
                                             alt="${c}"
-                                            @click=${t=>{t.stopPropagation(),this._handleMoreInfo(n)}}
+                                            @click=${t=>{t.stopPropagation(),this._handleMoreInfo(a)}}
                                             style="cursor: pointer;"
                                           />`:W`<span>Image not available</span>`}
                                     </div>
                                     <div class="carousel-controls">
                                       <button
                                         class="carousel-btn"
-                                        @click=${e=>this._handleCarouselChange(t,"prev",o.length,e)}
-                                        ?disabled=${o.length<=1}
+                                        @click=${e=>this._handleCarouselChange(t,"prev",i.length,e)}
+                                        ?disabled=${i.length<=1}
                                       >
                                         <ha-icon icon="mdi:chevron-left"></ha-icon>
                                       </button>
                                       <span class="carousel-label">${c}</span>
                                       <button
                                         class="carousel-btn"
-                                        @click=${e=>this._handleCarouselChange(t,"next",o.length,e)}
-                                        ?disabled=${o.length<=1}
+                                        @click=${e=>this._handleCarouselChange(t,"next",i.length,e)}
+                                        ?disabled=${i.length<=1}
                                       >
                                         <ha-icon icon="mdi:chevron-right"></ha-icon>
                                       </button>
@@ -345,10 +425,10 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                 <div class="resort-footer">
                   ${this._config.show_link&&r?W`
                         <a
-                          href=${r}
+                          href=${h}
                           target="_blank"
                           class="link-icon"
-                          title=${At(this.hass,"component.bergfex-card.card.link_title",{resortName:i})}
+                          title=${kt(this.hass,"component.bergfex-card.card.link_title",{resortName:o})}
                           @click=${t=>t.stopPropagation()}
                         >
                           <ha-icon icon="mdi:link-variant"></ha-icon>
@@ -357,10 +437,10 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
                   ${this._config.show_last_updated&&u?W`
                         <div
                           class="last-updated"
-                          @click=${t=>{t.stopPropagation(),u&&this._handleMoreInfo(u.entity_id)}}
+                          @click=${t=>{t.stopPropagation(),g&&this._handleMoreInfo(g.entity_id)}}
                         >
                           <ha-icon icon="mdi:clock-outline"></ha-icon>
-                          <span>${kt(u.state,this.hass)}</span>
+                          <span>${At(g.state,this.hass)}</span>
                         </div>
                       `:""}
                 </div>
@@ -369,8 +449,8 @@ class wt extends yt{}wt.directiveName="unsafeSVG",wt.resultType=2;const $t=gt(wt
         </div>
       </ha-card>
     `}static{this.styles=r`
-    ${a(Nt)}
-  `}};t([pt({attribute:!1})],Pt.prototype,"hass",void 0),t([
+    ${n(Nt)}
+  `}};t([pt({attribute:!1})],Tt.prototype,"hass",void 0),t([
 /**
  * @license
  * Copyright 2017 Google LLC

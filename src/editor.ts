@@ -5,17 +5,32 @@ import { localize } from './localize';
 import { fireEvent } from './utils';
 import editorStyles from './styles/editor.styles.scss';
 
-const GENERAL_SCHEMA = [{ name: 'title', selector: { text: {} } }];
-
-const RESORTS_SCHEMA = [
+const SCHEMA = [
+  { name: 'title', selector: { text: {} } },
   {
     name: 'resorts',
-    selector: {
-      device: {
-        multiple: true,
-        integration: 'bergfex',
-      },
-    },
+    selector: { device: { multiple: true, integration: 'bergfex' } },
+  },
+  {
+    type: 'expandable',
+    title: 'groups.display',
+    schema: [
+      { name: 'show_conditions', selector: { boolean: {} } },
+      { name: 'show_trend', selector: { boolean: {} } },
+      { name: 'show_link', selector: { boolean: {} } },
+      { name: 'show_last_updated', selector: { boolean: {} } },
+      { name: 'hide_closed_resorts', selector: { boolean: {} } },
+      { name: 'sort_by', selector: { select: { mode: 'dropdown' } } },
+    ],
+  },
+  {
+    type: 'expandable',
+    title: 'groups.ski_only',
+    schema: [
+      { name: 'show_snow', selector: { boolean: {} } },
+      { name: 'show_lifts_slopes', selector: { boolean: {} } },
+      { name: 'show_forecast', selector: { boolean: {} } },
+    ],
   },
 ];
 
@@ -45,93 +60,62 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
     if (!this.hass || !this._config) {
       return html``;
     }
-
-    const displaySchema = [
-      {
-        name: 'show_snow',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_lifts_slopes',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_conditions',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_forecast',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_trend',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_link',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'show_last_updated',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'hide_closed_resorts',
-        selector: { boolean: {} },
-      },
-      {
-        name: 'sort_by',
-        selector: {
-          select: {
-            mode: 'dropdown',
-            clearable: true,
-            options: [
-              {
-                value: 'mountain',
-                label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.mountain'),
-              },
-              { value: 'valley', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.valley') },
-              { value: 'new', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.new') },
-              { value: 'lift', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.lift') },
-              { value: 'update', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.update') },
-            ],
-          },
-        },
-      },
+    // Helper to build options for sort_by with localized labels
+    const sortOptions = [
+      { value: 'mountain', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.mountain') },
+      { value: 'valley', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.valley') },
+      { value: 'new', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.new') },
+      { value: 'lift', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.lift') },
+      { value: 'classical', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.classical') },
+      { value: 'skating', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.skating') },
+      { value: 'update', label: localize(this.hass, 'component.bergfex-card.editor.sort_by_options.update') },
     ];
+
+    // Compute schema and apply dynamic option transforms
+    const computeSchema = (items: Record<string, unknown>[]): Record<string, unknown>[] => {
+      return items.reduce((acc, item) => {
+        const newItem = { ...item } as Record<string, unknown>;
+
+        // Handle expandable sections
+        if (newItem.type === 'expandable' && Array.isArray(newItem.schema)) {
+          const nested = (newItem.schema as Record<string, unknown>[]).map((n) => ({ ...n }));
+          // Provide sort options if present
+          if (newItem.title === 'groups.display') {
+            nested.forEach((n) => {
+              if (n.name === 'sort_by') {
+                n.selector = { select: { mode: 'dropdown', clearable: true, options: sortOptions } };
+              }
+            });
+          }
+
+          newItem.title = typeof newItem.title === 'string' ? localize(this.hass, `component.bergfex-card.editor.${newItem.title}`) : newItem.title;
+          newItem.schema = nested;
+          acc.push(newItem);
+          return acc;
+        }
+
+        // For top-level resorts device selector, ensure integration is bergfex
+        if (newItem.name === 'resorts') {
+          newItem.selector = { device: { multiple: true, integration: 'bergfex' } };
+        }
+
+        acc.push(newItem);
+        return acc;
+      }, [] as Record<string, unknown>[]);
+    };
+
+    const schema = computeSchema(SCHEMA);
 
     return html`
       <ha-card>
         <div class="card-content card-config">
-          <div class="group">
-            <div class="group-header">${localize(this.hass, 'component.bergfex-card.editor.groups.core')}</div>
-            <ha-form
-              .schema=${GENERAL_SCHEMA}
-              .hass=${this.hass}
-              .data=${this._config}
-              .computeLabel=${(s: { name: string }) => localize(this.hass, `component.bergfex-card.editor.${s.name}`)}
-              @value-changed=${this._valueChanged}
-            ></ha-form>
-
-            <ha-form
-              .schema=${RESORTS_SCHEMA}
-              .hass=${this.hass}
-              .data=${this._config}
-              .computeLabel=${(s: { name: string }) => localize(this.hass, `component.bergfex-card.editor.${s.name}`)}
-              @value-changed=${this._valueChanged}
-            ></ha-form>
-          </div>
-
-          <div class="group">
-            <div class="group-header">${localize(this.hass, 'component.bergfex-card.editor.groups.display')}</div>
-            <ha-form
-              .schema=${displaySchema}
-              .hass=${this.hass}
-              .data=${this._config}
-              .computeLabel=${(s: { name: string }) => localize(this.hass, `component.bergfex-card.editor.${s.name}`)}
-              @value-changed=${this._valueChanged}
-            ></ha-form>
-          </div>
+          <ha-form
+            .schema=${schema}
+            .hass=${this.hass}
+            .data=${this._config}
+            .computeLabel=${(s: { name: string }) => localize(this.hass, `component.bergfex-card.editor.${s.name}`)}
+            @value-changed=${this._valueChanged}
+          ></ha-form>
         </div>
       </ha-card>
     `;
