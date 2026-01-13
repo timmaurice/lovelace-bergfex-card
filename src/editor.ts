@@ -73,35 +73,41 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
 
     // Compute schema and apply dynamic option transforms
     const computeSchema = (items: Record<string, unknown>[]): Record<string, unknown>[] => {
-      return items.reduce((acc, item) => {
-        const newItem = { ...item } as Record<string, unknown>;
+      return items.reduce(
+        (acc, item) => {
+          const newItem = { ...item } as Record<string, unknown>;
 
-        // Handle expandable sections
-        if (newItem.type === 'expandable' && Array.isArray(newItem.schema)) {
-          const nested = (newItem.schema as Record<string, unknown>[]).map((n) => ({ ...n }));
-          // Provide sort options if present
-          if (newItem.title === 'groups.display') {
-            nested.forEach((n) => {
-              if (n.name === 'sort_by') {
-                n.selector = { select: { mode: 'dropdown', clearable: true, options: sortOptions } };
-              }
-            });
+          // Handle expandable sections
+          if (newItem.type === 'expandable' && Array.isArray(newItem.schema)) {
+            const nested = (newItem.schema as Record<string, unknown>[]).map((n) => ({ ...n }));
+            // Provide sort options if present
+            if (newItem.title === 'groups.display') {
+              nested.forEach((n) => {
+                if (n.name === 'sort_by') {
+                  n.selector = { select: { mode: 'dropdown', clearable: true, options: sortOptions } };
+                }
+              });
+            }
+
+            newItem.title =
+              typeof newItem.title === 'string'
+                ? localize(this.hass, `component.bergfex-card.editor.${newItem.title}`)
+                : newItem.title;
+            newItem.schema = nested;
+            acc.push(newItem);
+            return acc;
           }
 
-          newItem.title = typeof newItem.title === 'string' ? localize(this.hass, `component.bergfex-card.editor.${newItem.title}`) : newItem.title;
-          newItem.schema = nested;
+          // For top-level resorts device selector, ensure integration is bergfex
+          if (newItem.name === 'resorts') {
+            newItem.selector = { device: { multiple: true, integration: 'bergfex' } };
+          }
+
           acc.push(newItem);
           return acc;
-        }
-
-        // For top-level resorts device selector, ensure integration is bergfex
-        if (newItem.name === 'resorts') {
-          newItem.selector = { device: { multiple: true, integration: 'bergfex' } };
-        }
-
-        acc.push(newItem);
-        return acc;
-      }, [] as Record<string, unknown>[]);
+        },
+        [] as Record<string, unknown>[],
+      );
     };
 
     const schema = computeSchema(SCHEMA);

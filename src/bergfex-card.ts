@@ -496,8 +496,12 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             const slopes_open_km = resort.slopes_open_km ? this.hass.states[resort.slopes_open_km] : undefined;
             const slopes_open = resort.slopes_open ? this.hass.states[resort.slopes_open] : undefined;
 
-            const classical_open_km = resort.classical_trails_open ? this.hass.states[resort.classical_trails_open] : undefined;
-            const skating_open_km = resort.skating_trails_open ? this.hass.states[resort.skating_trails_open] : undefined;
+            const classical_open_km = resort.classical_trails_open
+              ? this.hass.states[resort.classical_trails_open]
+              : undefined;
+            const skating_open_km = resort.skating_trails_open
+              ? this.hass.states[resort.skating_trails_open]
+              : undefined;
             const classical_condition = resort.classical_condition
               ? this.hass.states[resort.classical_condition]
               : undefined;

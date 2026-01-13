@@ -2,7 +2,8 @@
   "editor": {
     "groups": {
       "core": "Główna konfiguracja",
-      "display": "Wyświetlacz"
+      "display": "Wyświetlacz",
+      "ski_only": "Opcje kurortu narciarskiego"
     },
     "title": "Tytuł (opcjonalnie)",
     "resorts": "Wpisy kurortu",
@@ -20,6 +21,8 @@
       "valley": "Śnieg (dolina)",
       "new": "Nowy śnieg",
       "lift": "Otwarte wyciągi",
+      "classical": "Trasy klasyczne",
+      "skating": "Trasy łyżwiarskie",
       "update": "Ostatnio aktualizowane"
     }
   },
@@ -35,8 +38,14 @@
       "avalanche_warning": "Ostrzeżenie lawinowe",
       "last_snowfall": "Ostatni opad",
       "slopes_info": "Trasy",
-      "slopes_open_km": "otwarte",
+      "slopes_open_km": "Otwarte",
+      "slopes_total": "Całkowite",
       "slopes_total_km": "Całkowita",
+      "classical_trails": "Trasy klasyczne",
+      "skating_trails": "Trasy łyżwiarskie",
+      "classical_condition": "Stan tras klasycznych",
+      "skating_condition": "Stan tras łyżwiarskich",
+      "operation_status": "Status działania",
       "link_title": "Otwórz informację o  {resortName} na stronie Bergfex"
     },
     "forecast": {
@@ -49,6 +58,11 @@
     "accordion": {
       "conditions": "Warunki",
       "forecast": "Prognoza opadów"
+    },
+    "status": {
+      "open": "Otwarte",
+      "closed": "Zamknięte",
+      "unknown": "Nieznany"
     }
   },
   "common": {
