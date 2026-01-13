@@ -50,8 +50,8 @@ const createMockResort = (
     forecast_days?: boolean;
     forecast_summaries?: boolean;
     operation_status?: string;
-    classical_trails?: string;
-    skating_trails?: string;
+    classical_open_km?: string;
+    skating_open_km?: string;
     classical_condition?: string;
     skating_condition?: string;
     slope_condition?: string;
@@ -91,8 +91,8 @@ const createMockResort = (
   if (data.lifts_total) createEntity('lifts_total', data.lifts_total);
   if (data.slopes_open_km) createEntity('slopes_open_km', data.slopes_open_km, 'km');
   if (data.slopes_total_km) createEntity('slopes_total_km', data.slopes_total_km, 'km');
-  if (data.classical_trails) createEntity('classical_trails', data.classical_trails, 'km');
-  if (data.skating_trails) createEntity('skating_trails', data.skating_trails, 'km');
+  if (data.classical_open_km) createEntity('classical_open_km', data.classical_open_km, 'km');
+  if (data.skating_open_km) createEntity('skating_open_km', data.skating_open_km, 'km');
   if (data.classical_condition) createEntity('classical_condition', data.classical_condition);
   if (data.skating_condition) createEntity('skating_condition', data.skating_condition);
   if (data.slope_condition) createEntity('slope_condition', data.slope_condition);
@@ -214,7 +214,7 @@ describe('BergfexCard', () => {
       expect(resortEl?.querySelector('.resort-name')?.textContent).toBe('Ischgl');
       expect(resortEl?.querySelector('.resort-status')?.textContent).toBe('Open');
 
-      const detailItems = element.shadowRoot?.querySelectorAll('.detail-item');
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
       // Normalize whitespace for more reliable matching
       expect(detailItems?.[0].textContent?.replace(/\s+/g, ' ').trim()).toContain('150 cm'); // snow mountain
       expect(detailItems?.[0].textContent?.replace(/\s+/g, ' ').trim()).toContain('Snow Mountain'); // label
@@ -239,7 +239,7 @@ describe('BergfexCard', () => {
       const resort = createMockResort('ischgl', 'Ischgl', resortData);
       await setupCard({ show_lifts_slopes: true }, resort);
 
-      const detailItems = element.shadowRoot?.querySelectorAll('.detail-item');
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
       // Normalize whitespace
       // We need to find the item with slope icon
       const slopeItem = Array.from(detailItems || []).find((item) =>
@@ -464,8 +464,8 @@ describe('BergfexCard', () => {
     it('should render cross-country details correctly', async () => {
       const resortData = {
         status: 'Open' as const,
-        classical_trails: '15',
-        skating_trails: '10',
+        classical_open_km: '15',
+        skating_open_km: '10',
         classical_condition: 'Good',
         skating_condition: 'Freshly Prepared',
         operation_status: 'Partly open',
@@ -479,7 +479,7 @@ describe('BergfexCard', () => {
       expect(resortEl?.querySelector('.resort-name')?.textContent).toBe('XC Paradise');
       expect(resortEl?.querySelector('.resort-status')?.textContent).toBe('Open');
 
-      const detailItems = element.shadowRoot?.querySelectorAll('.detail-item');
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
       expect(detailItems.length).toBe(2); // classical and skating trails
 
       // Check for trail details instead of snow/lifts
@@ -511,7 +511,7 @@ describe('BergfexCard', () => {
     it('should not render snow details for cross-country resorts even if show_snow is true', async () => {
       const resortData = {
         status: 'Open' as const,
-        classical_trails: '15',
+        classical_open_km: '15',
         snow_mountain: '50', // This data exists but should not be shown
       };
       const resort = createMockResort('xc-resort', 'XC Paradise', resortData);
@@ -524,8 +524,8 @@ describe('BergfexCard', () => {
     });
 
     it('should sort cross-country resorts by trail length', async () => {
-      const resort1 = createMockResort('resort1', 'Resort A', { status: 'Open', classical_trails: '20' });
-      const resort2 = createMockResort('resort2', 'Resort B', { status: 'Open', classical_trails: '10' });
+      const resort1 = createMockResort('resort1', 'Resort A', { status: 'Open', classical_open_km: '20' });
+      const resort2 = createMockResort('resort2', 'Resort B', { status: 'Open', classical_open_km: '10' });
 
       await setupCard({ sort_by: 'classical' }, resort1, resort2);
 

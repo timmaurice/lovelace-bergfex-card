@@ -2,7 +2,8 @@
   "editor": {
     "groups": {
       "core": "Grundeinstellungen",
-      "display": "Anzeige"
+      "display": "Anzeige",
+      "ski_only": "Optionen für Skigebiete"
     },
     "title": "Titel (Optional)",
     "resorts": "Skigebiete",
@@ -38,7 +39,7 @@
       "last_snowfall": "Letzter Schneefall",
       "slopes_info": "Pisten",
       "slopes_open_km": "Offen",
-      "slopes_total_km": "Gesamt",
+      "slopes_total": "Gesamt",
       "classical_trails": "Klassische Loipen",
       "skating_trails": "Skating-Loipen",
       "classical_condition": "Klassischer Zustand",
@@ -56,6 +57,11 @@
     "accordion": {
       "conditions": "Bedingungen",
       "forecast": "Schneevorhersage"
+    },
+    "status": {
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "unknown": "Unbekannt"
     }
   },
   "common": {

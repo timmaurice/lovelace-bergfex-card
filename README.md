@@ -106,6 +106,19 @@ resorts:
     name: Local Cross-Country Trails
 ```
 
+## Cross-country sensors
+
+The card recognises cross-country trail sensors and reads totals from either the sensor attributes or separate total entities.
+
+- Preferred sensor names:
+    - `_classical_trails_open` — open classical trail length (km)
+    - `_skating_trails_open` — open skating trail length (km)
+- Totals handling:
+    - The card prefers a `total` attribute on the open sensor (e.g., `attributes.total`).
+    - If no attribute is present, it will fall back to separate total entities named `_classical_total_km` / `_skating_total_km`.
+- Units: `km` is assumed; the card will display the `unit_of_measurement` attribute when available.
+
+
 ## Development
 
 <details>

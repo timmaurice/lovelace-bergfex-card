@@ -2,7 +2,8 @@
   "editor": {
     "groups": {
       "core": "Core Configuration",
-      "display": "Display"
+      "display": "Display",
+      "ski_only": "Ski Resort Options"
     },
     "title": "Title (Optional)",
     "resorts": "Resort Entities",
@@ -38,7 +39,7 @@
       "last_snowfall": "Last Snowfall",
       "slopes_info": "Slopes",
       "slopes_open_km": "Open",
-      "slopes_total_km": "Total",
+      "slopes_total": "Total",
       "classical_trails": "Classical Trails",
       "skating_trails": "Skating Trails",
       "classical_condition": "Classical Condition",
@@ -56,6 +57,11 @@
     "accordion": {
       "conditions": "Conditions",
       "forecast": "Snow Forecast"
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Closed",
+      "unknown": "Unknown"
     }
   },
   "common": {
