@@ -30,6 +30,7 @@ The editor is available in the following languages:
 - English
 - German
 - Polish
+- French
 
 <details>
 <summary>Contributing Translations</summary>
