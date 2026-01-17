@@ -66,7 +66,7 @@
   },
   "common": {
     "errors": {
-      "no_resorts": "Vous devez définir au moins une entité de station."
+      "no_resorts": "Vous devez définir au moins une station de ski."
     }
   }
 }
