@@ -48,7 +48,7 @@
       "link_title": "Åben {resortName} detaljeret side på bergfex"
     },
     "forecast": {
-      "daily": "DAglig",
+      "daily": "Daglig",
       "summary": "Opsummeret",
       "hour": "{hours} Timer",
       "today": "I dag",

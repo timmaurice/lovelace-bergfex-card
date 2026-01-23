@@ -23,7 +23,6 @@ interface Resort {
   snow_mountain?: string;
   new_snow?: string;
   lifts_open?: string;
-  lifts_total?: string;
   last_update?: string;
   snow_condition?: string;
   last_snowfall?: string;
@@ -35,8 +34,6 @@ interface Resort {
   classical_trails_open?: string;
   skating_trails_open?: string;
   // New/alternate keys used by the integration for cross-country
-  classical_total_km?: string;
-  skating_total_km?: string;
   classical_condition?: string;
   skating_condition?: string;
   forecast_days?: string[];
@@ -164,16 +161,13 @@ export class BergfexCard extends LitElement implements LovelaceCard {
         if (entityId.endsWith('_last_snowfall')) resorts[deviceId].last_snowfall = entityId;
         if (entityId.endsWith('_avalanche_warning')) resorts[deviceId].avalanche_warning = entityId;
         if (entityId.endsWith('_slopes_open_km')) resorts[deviceId].slopes_open_km = entityId;
-        if (entityId.endsWith('_slopes_open_km')) resorts[deviceId].slopes_open_km = entityId;
         if (entityId.endsWith('_slopes_open')) resorts[deviceId].slopes_open = entityId;
         if (entityId.endsWith('_slope_condition')) resorts[deviceId].slope_condition = entityId;
         if (entityId.endsWith('_classical_trails_open')) resorts[deviceId].classical_trails_open = entityId;
         if (entityId.endsWith('_skating_trails_open')) resorts[deviceId].skating_trails_open = entityId;
-        // If explicit total sensors exist (older setups), keep them; otherwise totals may be provided as attributes
-        if (entityId.endsWith('_classical_total_km')) resorts[deviceId].classical_total_km = entityId;
-        if (entityId.endsWith('_skating_total_km')) resorts[deviceId].skating_total_km = entityId;
         if (entityId.endsWith('_classical_condition')) resorts[deviceId].classical_condition = entityId;
         if (entityId.endsWith('_skating_condition')) resorts[deviceId].skating_condition = entityId;
+        // If explicit total sensors exist (older setups), keep them; otherwise totals may be provided as attributes
 
         if (entityId.includes('_snow_forecast_day_')) {
           resorts[deviceId].forecast_days?.push(entityId);
@@ -510,28 +504,14 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             const isCrossCountry = this._isCrossCountryResort(resort);
 
             // Extract totals for cross-country if provided as attributes or as separate sensors
-            const classical_total_attr = classical_open_km?.attributes?.total;
-            const skating_total_attr = skating_open_km?.attributes?.total;
-            const classical_total_entity = resort.classical_total_km
-              ? this.hass.states[resort.classical_total_km as string]
-              : undefined;
-            const skating_total_entity = resort.skating_total_km
-              ? this.hass.states[resort.skating_total_km as string]
-              : undefined;
-            const classical_total_value =
-              classical_total_attr ?? (classical_total_entity ? classical_total_entity.state : undefined);
-            const skating_total_value =
-              skating_total_attr ?? (skating_total_entity ? skating_total_entity.state : undefined);
+            const classical_total = classical_open_km?.attributes?.total;
+            const skating_total = skating_open_km?.attributes?.total;
             // Lifts and slopes: totals may be provided as attributes on the "open" sensor
-            const lifts_total_attr = lifts_open?.attributes?.total;
-            const lifts_total_entity = resort.lifts_total ? this.hass.states[resort.lifts_total as string] : undefined;
-            const lifts_total_value = lifts_total_attr ?? (lifts_total_entity ? lifts_total_entity.state : undefined);
+            const lifts_total = lifts_open?.attributes?.total;
 
-            const slopes_total_km_attr = slopes_open_km?.attributes?.total;
-            const slopes_total_km_value = slopes_total_km_attr;
+            const slopes_total_km = slopes_open_km?.attributes?.total;
 
-            const slopes_total_attr = slopes_open?.attributes?.total;
-            const slopes_total_value = slopes_total_attr;
+            const slopes_total = slopes_open?.attributes?.total;
 
             return html`
               <div class="resort" tabindex="0" @click=${() => this._handleMoreInfo(primaryEntity)}>
@@ -655,9 +635,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                     ? (() => {
                                         const openVal = parseFloat(classical_open_km.state);
                                         const unit = classical_open_km.attributes.unit_of_measurement ?? 'km';
-                                        const totalVal = classical_total_value
-                                          ? parseFloat(String(classical_total_value))
-                                          : NaN;
+                                        const totalVal = classical_total ? parseFloat(String(classical_total)) : NaN;
                                         if (!isNaN(totalVal)) {
                                           return html`<div class="value-row">
                                               <span>${openVal}/${totalVal} ${unit}</span>
@@ -698,9 +676,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                     ? (() => {
                                         const openVal = parseFloat(skating_open_km.state);
                                         const unit = skating_open_km.attributes.unit_of_measurement ?? 'km';
-                                        const totalVal = skating_total_value
-                                          ? parseFloat(String(skating_total_value))
-                                          : NaN;
+                                        const totalVal = skating_total ? parseFloat(String(skating_total)) : NaN;
                                         if (!isNaN(totalVal)) {
                                           return html`<div class="value-row">
                                               <span>${openVal}/${totalVal} ${unit}</span>
@@ -731,7 +707,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   'n-a':
                                     !lifts_open ||
                                     isNaN(parseFloat(lifts_open.state)) ||
-                                    isNaN(parseFloat(String(lifts_total_value ?? NaN))),
+                                    isNaN(parseFloat(String(lifts_total ?? NaN))),
                                 })}
                                 @click=${(e: Event) => {
                                   e.stopPropagation();
@@ -745,7 +721,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   ${lifts_open && !isNaN(parseFloat(lifts_open.state))
                                     ? (() => {
                                         const openVal = parseFloat(lifts_open.state);
-                                        const totalRaw = lifts_total_value;
+                                        const totalRaw = lifts_total;
                                         const totalVal = totalRaw ? parseFloat(String(totalRaw)) : NaN;
                                         if (!isNaN(totalVal)) {
                                           return html`<div class="value-row">
@@ -790,7 +766,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                         ${slopes_open_km && !isNaN(parseFloat(slopes_open_km.state))
                                           ? (() => {
                                               const openVal = parseFloat(slopes_open_km.state);
-                                              const totalRaw = slopes_total_km_value;
+                                              const totalRaw = slopes_total_km;
                                               const totalVal = totalRaw ? parseFloat(String(totalRaw)) : NaN;
                                               const unit = slopes_open_km.attributes.unit_of_measurement ?? 'km';
                                               if (!isNaN(totalVal)) {
@@ -816,7 +792,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                     </div>
                                   `
                                 : ''}
-                              ${slopes_open && slopes_total_value
+                              ${slopes_open && slopes_total
                                 ? html`
                                     <div
                                       class=${classMap({
@@ -824,7 +800,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                         'n-a':
                                           !slopes_open ||
                                           isNaN(parseFloat(slopes_open.state)) ||
-                                          isNaN(parseFloat(String(slopes_total_value ?? NaN))),
+                                          isNaN(parseFloat(String(slopes_total ?? NaN))),
                                       })}
                                       @click=${(e: Event) => {
                                         e.stopPropagation();
@@ -838,7 +814,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                         ${slopes_open && !isNaN(parseFloat(slopes_open.state))
                                           ? (() => {
                                               const openVal = parseFloat(slopes_open.state);
-                                              const totalRaw = slopes_total_value;
+                                              const totalRaw = slopes_total;
                                               const totalVal = totalRaw ? parseFloat(String(totalRaw)) : NaN;
                                               if (!isNaN(totalVal)) {
                                                 return html`<div class="value-row">
