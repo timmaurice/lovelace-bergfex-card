@@ -63,7 +63,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
   @query('ha-card') private _card!: LovelaceCard;
   @state() private _config!: BergfexCardConfig;
   @state() private _forecastState: Record<string, { tab: 'daily' | 'summary'; index: number }> = {};
-  @state() private _accordionState: Record<string, 'conditions' | 'forecast' | null> = {};
+  @state() private _accordionState: Record<string, Record<string, boolean>> = {};
   @state() private _historyState: Record<string, string> = {}; // entity_id -> state 24h ago
 
   public setConfig(config: BergfexCardConfig): void {
@@ -80,6 +80,8 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       show_avalanche: true,
       show_slopes: true,
       show_trend: false,
+      conditions_default_open: false,
+      forecast_default_open: false,
       ...config,
     };
 
@@ -332,9 +334,14 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
   private _toggleAccordion(resortId: string, section: 'conditions' | 'forecast', e: Event): void {
     e.stopPropagation();
+    const resortState = this._accordionState[resortId] || {};
+    const isOpen = resortState[section] ?? this._config[`${section}_default_open` as keyof BergfexCardConfig] ?? false;
     this._accordionState = {
       ...this._accordionState,
-      [resortId]: this._accordionState[resortId] === section ? null : section,
+      [resortId]: {
+        ...resortState,
+        [section]: !isOpen,
+      },
     };
   }
 
@@ -512,6 +519,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
             const slopes_total_km = slopes_open_km?.attributes?.total;
 
             const slopes_total = slopes_open?.attributes?.total;
+            const isConditionsOpen =
+              this._accordionState[resortId]?.['conditions'] ?? this._config.conditions_default_open;
+            const isForecastOpen = this._accordionState[resortId]?.['forecast'] ?? this._config.forecast_default_open;
 
             return html`
               <div class="resort" tabindex="0" @click=${() => this._handleMoreInfo(primaryEntity)}>
@@ -860,13 +870,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                           @click=${(e: Event) => this._toggleAccordion(resortId, 'conditions', e)}
                         >
                           <span>${localize(this.hass, 'component.bergfex-card.card.accordion.conditions')}</span>
-                          <ha-icon
-                            icon=${this._accordionState[resortId] === 'conditions'
-                              ? 'mdi:chevron-up'
-                              : 'mdi:chevron-down'}
-                          ></ha-icon>
+                          <ha-icon icon=${isConditionsOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
                         </div>
-                        ${this._accordionState[resortId] === 'conditions'
+                        ${isConditionsOpen
                           ? html`
                               <div class="accordion-content details">
                                 ${this._config.show_conditions && (snow_condition || slope_condition) && !isCrossCountry
@@ -1103,11 +1109,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                         @click=${(e: Event) => this._toggleAccordion(resortId, 'forecast', e)}
                       >
                         <span>${localize(this.hass, 'component.bergfex-card.card.accordion.forecast')}</span>
-                        <ha-icon
-                          icon=${this._accordionState[resortId] === 'forecast' ? 'mdi:chevron-up' : 'mdi:chevron-down'}
-                        ></ha-icon>
+                        <ha-icon icon=${isForecastOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
                       </div>
-                      ${this._accordionState[resortId] === 'forecast'
+                      ${isForecastOpen
                         ? html`
                             <div class="forecast-container">
                               <div class="forecast-tabs">

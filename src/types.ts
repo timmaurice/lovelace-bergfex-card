@@ -81,4 +81,6 @@ export interface BergfexCardConfig extends LovelaceCardConfig {
   show_trend?: boolean;
   sort_by?: string;
   title?: string;
+  conditions_default_open?: boolean;
+  forecast_default_open?: boolean;
 }

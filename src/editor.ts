@@ -16,6 +16,7 @@ const SCHEMA = [
     title: 'groups.display',
     schema: [
       { name: 'show_conditions', selector: { boolean: {} } },
+      { name: 'conditions_default_open', selector: { boolean: {} } },
       { name: 'show_trend', selector: { boolean: {} } },
       { name: 'show_link', selector: { boolean: {} } },
       { name: 'show_last_updated', selector: { boolean: {} } },
@@ -30,6 +31,7 @@ const SCHEMA = [
       { name: 'show_snow', selector: { boolean: {} } },
       { name: 'show_lifts_slopes', selector: { boolean: {} } },
       { name: 'show_forecast', selector: { boolean: {} } },
+      { name: 'forecast_default_open', selector: { boolean: {} } },
     ],
   },
 ];
@@ -46,6 +48,8 @@ export class BergfexCardEditor extends LitElement implements LovelaceCardEditor 
       show_conditions: true,
       show_forecast: false,
       show_trend: false,
+      conditions_default_open: false,
+      forecast_default_open: false,
       ...config,
     };
   }

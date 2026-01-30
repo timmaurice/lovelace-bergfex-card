@@ -1,6 +1,6 @@
 {
   "name": "bergfex-card",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A Lovelace card to display ski resort conditions from Bergfex.",
   "homepage": "https://github.com/timmaurice/lovelace-bergfex-card#readme",
   "bugs": {
@@ -34,12 +34,12 @@
     "jsdom": "^27.4.0",
     "lit": "^3.3.2",
     "prettier": "^3.8.1",
-    "rollup": "^4.56.0",
+    "rollup": "^4.57.1",
     "rollup-plugin-lit-css": "^6.0.0",
     "rollup-plugin-string": "^3.0.0",
     "sass": "^1.97.3",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.53.1",
+    "typescript-eslint": "^8.54.0",
     "vitest": "^4.0.18"
   },
   "dependencies": {

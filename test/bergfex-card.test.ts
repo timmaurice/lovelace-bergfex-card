@@ -566,4 +566,62 @@ describe('BergfexCard', () => {
       expect(resortEls?.[1].textContent).toBe('Resort B'); // 10km
     });
   });
+
+  describe('Default Open Accordions', () => {
+    it('should have conditions section open by default if conditions_default_open is true', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_condition: 'Powder',
+      });
+      await setupCard({ show_conditions: true, conditions_default_open: true }, resort);
+
+      const accordionHeaders = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const conditionsHeader = accordionHeaders.find((h) => h.textContent?.includes('Conditions')) as HTMLElement;
+
+      // Check if content is visible without clicking
+      const accordionContent = conditionsHeader.nextElementSibling;
+      expect(accordionContent).not.toBeNull();
+      expect(accordionContent?.textContent).toContain('Powder');
+    });
+
+    it('should have forecast section open by default if forecast_default_open is true', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        forecast_days: true,
+      });
+      await setupCard({ show_forecast: true, forecast_default_open: true }, resort);
+
+      const accordionHeaders = Array.from(element.shadowRoot?.querySelectorAll('.accordion-header') || []);
+      const forecastHeader = accordionHeaders.find((h) => h.textContent?.includes('Forecast')) as HTMLElement;
+      expect(forecastHeader).not.toBeNull();
+
+      const forecastContainer = element.shadowRoot?.querySelector('.forecast-container');
+      expect(forecastContainer).not.toBeNull();
+    });
+
+    it('should allow multiple sections to be open at the same time', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', {
+        status: 'Open',
+        snow_condition: 'Powder',
+        forecast_days: true,
+      });
+      await setupCard(
+        {
+          show_conditions: true,
+          show_forecast: true,
+          conditions_default_open: true,
+          forecast_default_open: true,
+        },
+        resort,
+      );
+
+      const conditionsContent = Array.from(element.shadowRoot?.querySelectorAll('.accordion-content') || []).find(
+        (el) => el.textContent?.includes('Powder'),
+      );
+      const forecastContainer = element.shadowRoot?.querySelector('.forecast-container');
+
+      expect(conditionsContent).not.toBeUndefined();
+      expect(forecastContainer).not.toBeNull();
+    });
+  });
 });
