@@ -40,6 +40,7 @@
       "avalanche_warning": "Avalanche Warning",
       "last_snowfall": "Last Snowfall",
       "slopes_info": "Slopes",
+      "slopes_info_km": "Slopes (km)",
       "slopes_open_km": "Open",
       "slopes_total": "Total",
       "classical_trails": "Classical Trails",
@@ -52,7 +53,7 @@
     "forecast": {
       "daily": "Daily",
       "summary": "Summary",
-      "hour": "{hours} Hour",
+      "hour": "{hours} Hours",
       "today": "Today",
       "tomorrow": "Tomorrow"
     },

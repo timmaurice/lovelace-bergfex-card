@@ -40,25 +40,30 @@ const createMockResort = (
   data: {
     status: 'Open' | 'Closed';
     link?: string;
-    snow_valley?: string;
-    snow_mountain?: string;
-    new_snow?: string;
-    lifts_open?: string;
-    lifts_total?: string;
-    slopes_open_km?: string;
+    avalanche_warning?: string;
+    classical_condition?: string;
+    classical_total_km_attr?: string;
+    classical_trails_open?: string;
     forecast_days?: boolean;
     forecast_summaries?: boolean;
-    operation_status?: string;
-    classical_trails_open?: string;
-    skating_trails_open?: string;
-    classical_total_km_attr?: string;
-    skating_total_km_attr?: string;
-    classical_condition?: string;
-    skating_condition?: string;
-    slope_condition?: string;
-    snow_condition?: string;
     last_snowfall?: string;
-    avalanche_warning?: string;
+    lifts_open?: string;
+    lifts_open_count?: string;
+    lifts_total?: string;
+    new_snow?: string;
+    operation_status?: string;
+    skating_condition?: string;
+    skating_total_km_attr?: string;
+    skating_trails_open?: string;
+    slope_condition?: string;
+    slopes_open?: string; // Fallback
+    slopes_open_count?: string; // New
+    slopes_open_km?: string;
+    slopes_total?: string;
+    slopes_total_km?: string;
+    snow_condition?: string;
+    snow_mountain?: string;
+    snow_valley?: string;
   },
 ) => {
   const device_id = `device-${id}`;
@@ -88,10 +93,17 @@ const createMockResort = (
   if (data.snow_valley) createEntity('snow_valley', data.snow_valley, 'cm');
   if (data.snow_mountain) createEntity('snow_mountain', data.snow_mountain, 'cm');
   if (data.new_snow) createEntity('new_snow', data.new_snow, 'cm');
-  if (data.lifts_open) {
+  if (data.lifts_open_count) {
+    createEntity('lifts_open_count', data.lifts_open_count, undefined, { total: data.lifts_total });
+  } else if (data.lifts_open) {
     createEntity('lifts_open', data.lifts_open, undefined, { total: data.lifts_total });
   }
-  if (data.slopes_open_km) createEntity('slopes_open_km', data.slopes_open_km, 'km');
+  if (data.slopes_open_km) createEntity('slopes_open_km', data.slopes_open_km, 'km', { total: data.slopes_total_km });
+  if (data.slopes_open_count) {
+    createEntity('slopes_open_count', data.slopes_open_count, undefined, { total: data.slopes_total });
+  } else if (data.slopes_open) {
+    createEntity('slopes_open', data.slopes_open, undefined, { total: data.slopes_total });
+  }
 
   if (data.classical_trails_open) {
     createEntity('classical_trails_open', data.classical_trails_open, 'km', { total: data.classical_total_km_attr });
@@ -237,7 +249,101 @@ describe('BergfexCard', () => {
       expect(liftItems[0].querySelector('.progress-bar-container')).not.toBeNull(); // progress bar
     });
 
-    it('should render slopes open even without total', async () => {
+    it('should render lifts open count with total and progress bar', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        lifts_open_count: '30',
+        lifts_total: '35',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const liftItem = Array.from(detailItems || []).find((item) => item.textContent?.includes('30/35'));
+      expect(liftItem).not.toBeNull();
+      expect(liftItem?.querySelector('.progress-bar-container')).not.toBeNull();
+    });
+
+    it('should render lifts open count without total (no progress bar)', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        lifts_open_count: '30',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const liftItem = Array.from(detailItems || []).find((item) =>
+        item.textContent?.replace(/\s+/g, ' ').trim().includes('30 Lifts Open'),
+      );
+      expect(liftItem).not.toBeNull();
+      expect(liftItem?.querySelector('.progress-bar-container')).toBeNull();
+    });
+
+    it('should fallback to lifts_open if lifts_open_count is not provided', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        lifts_open: '25',
+        lifts_total: '30',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const liftItem = Array.from(detailItems || []).find((item) => item.textContent?.includes('25/30'));
+      expect(liftItem).not.toBeNull();
+      expect(liftItem?.querySelector('.progress-bar-container')).not.toBeNull();
+    });
+
+    it('should prioritize lifts_open_count over lifts_open if both are provided', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        lifts_open_count: '20',
+        lifts_total: '25',
+        lifts_open: '15', // Should be ignored
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const liftItem = Array.from(detailItems || []).find((item) => item.textContent?.includes('20/25'));
+      expect(liftItem).not.toBeNull();
+      expect(liftItem?.querySelector('.progress-bar-container')).not.toBeNull();
+      expect(element.shadowRoot?.textContent).not.toContain('15'); // Ensure lifts_open is not rendered
+    });
+
+    it('should render slopes open count with total and progress bar', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        slopes_open_count: '25',
+        slopes_total: '30',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const slopeItem = Array.from(detailItems || []).find((item) => item.textContent?.includes('25/30'));
+      expect(slopeItem).not.toBeNull();
+      expect(slopeItem?.querySelector('.progress-bar-container')).not.toBeNull();
+    });
+
+    it('should render slopes open count without total (no progress bar)', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        slopes_open_count: '25',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const slopeItem = Array.from(detailItems || []).find((item) =>
+        item.textContent?.replace(/\s+/g, ' ').trim().includes('25 Slopes Info'),
+      );
+      expect(slopeItem).not.toBeNull();
+      expect(slopeItem?.querySelector('.progress-bar-container')).toBeNull();
+    });
+
+    it('should render slopes open km even without total', async () => {
       const resortData = {
         status: 'Open' as const,
         slopes_open_km: '25',
@@ -254,6 +360,38 @@ describe('BergfexCard', () => {
       expect(slopeItem).not.toBeNull();
       expect(slopeItem?.textContent?.replace(/\s+/g, ' ').trim()).toContain('25 km');
       expect(slopeItem?.querySelector('.progress-bar-container')).toBeNull(); // NO progress bar
+    });
+
+    it('should fallback to slopes_open if slopes_open_count is not provided', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        slopes_open: '20',
+        slopes_total: '25',
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const slopeItem = Array.from(detailItems || []).find((item) => item.textContent?.includes('20/25'));
+      expect(slopeItem).not.toBeNull();
+      expect(slopeItem?.querySelector('.progress-bar-container')).not.toBeNull();
+    });
+
+    it('should prioritize slopes_open_count over slopes_open if both are provided', async () => {
+      const resortData = {
+        status: 'Open' as const,
+        slopes_open_count: '15',
+        slopes_total: '20',
+        slopes_open: '10', // Should be ignored
+      };
+      const resort = createMockResort('ischgl', 'Ischgl', resortData);
+      await setupCard({ show_lifts_slopes: true }, resort);
+
+      const detailItems = element.shadowRoot!.querySelectorAll('.detail-item');
+      const slopeItem = Array.from(detailItems || []).find((item) => item.textContent?.includes('15/20'));
+      expect(slopeItem).not.toBeNull();
+      expect(slopeItem?.querySelector('.progress-bar-container')).not.toBeNull();
+      expect(element.shadowRoot?.textContent).not.toContain('10'); // Ensure slopes_open is not rendered
     });
   });
 
