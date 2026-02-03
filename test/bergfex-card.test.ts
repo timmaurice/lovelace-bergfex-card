@@ -43,7 +43,7 @@ const createMockResort = (
     avalanche_warning?: string;
     classical_condition?: string;
     classical_total_km_attr?: string;
-    classical_trails_open?: string;
+    classical_open_km?: string;
     forecast_days?: boolean;
     forecast_summaries?: boolean;
     last_snowfall?: string;
@@ -54,7 +54,7 @@ const createMockResort = (
     operation_status?: string;
     skating_condition?: string;
     skating_total_km_attr?: string;
-    skating_trails_open?: string;
+    skating_open_km?: string;
     slope_condition?: string;
     slopes_open?: string; // Fallback
     slopes_open_count?: string; // New
@@ -78,7 +78,9 @@ const createMockResort = (
 
   const createEntity = (key: string, state: string, unit?: string, extraAttributes: Record<string, unknown> = {}) => {
     const entity_id = key.startsWith('image.') ? key : `sensor.${id}_${key}`;
+
     entities[entity_id] = { entity_id, device_id };
+
     states[entity_id] = {
       entity_id,
       state,
@@ -105,11 +107,11 @@ const createMockResort = (
     createEntity('slopes_open', data.slopes_open, undefined, { total: data.slopes_total });
   }
 
-  if (data.classical_trails_open) {
-    createEntity('classical_trails_open', data.classical_trails_open, 'km', { total: data.classical_total_km_attr });
+  if (data.classical_open_km) {
+    createEntity('classical_open_km', data.classical_open_km, 'km', { total: data.classical_total_km_attr });
   }
-  if (data.skating_trails_open) {
-    createEntity('skating_trails_open', data.skating_trails_open, 'km', { total: data.skating_total_km_attr });
+  if (data.skating_open_km) {
+    createEntity('skating_open_km', data.skating_open_km, 'km', { total: data.skating_total_km_attr });
   }
   if (data.classical_condition) createEntity('classical_condition', data.classical_condition);
   if (data.skating_condition) createEntity('skating_condition', data.skating_condition);
@@ -608,8 +610,8 @@ describe('BergfexCard', () => {
     it('should render cross-country details correctly', async () => {
       const resortData = {
         status: 'Open' as const,
-        classical_trails_open: '15',
-        skating_trails_open: '10',
+        classical_open_km: '15',
+        skating_open_km: '10',
         classical_condition: 'Good',
         skating_condition: 'Freshly Prepared',
         operation_status: 'Partly open',
@@ -655,9 +657,9 @@ describe('BergfexCard', () => {
     it('should render cross-country trails with total and progress bar', async () => {
       const resortData = {
         status: 'Open' as const,
-        classical_trails_open: '15',
+        classical_open_km: '15',
         classical_total_km_attr: '20',
-        skating_trails_open: '10',
+        skating_open_km: '10',
         skating_total_km_attr: '25',
       };
       const resort = createMockResort('xc-resort-totals', 'XC Totals', resortData);
@@ -679,7 +681,7 @@ describe('BergfexCard', () => {
     it('should not render snow details for cross-country resorts even if show_snow is true', async () => {
       const resortData = {
         status: 'Open' as const,
-        classical_trails_open: '15',
+        classical_open_km: '15',
         snow_mountain: '50', // This data exists but should not be shown
       };
       const resort = createMockResort('xc-resort', 'XC Paradise', resortData);
@@ -692,8 +694,8 @@ describe('BergfexCard', () => {
     });
 
     it('should sort cross-country resorts by trail length', async () => {
-      const resort1 = createMockResort('resort1', 'Resort A', { status: 'Open', classical_trails_open: '20' });
-      const resort2 = createMockResort('resort2', 'Resort B', { status: 'Open', classical_trails_open: '10' });
+      const resort1 = createMockResort('resort1', 'Resort A', { status: 'Open', classical_open_km: '20' });
+      const resort2 = createMockResort('resort2', 'Resort B', { status: 'Open', classical_open_km: '10' });
 
       await setupCard({ sort_by: 'classical' }, resort1, resort2);
 
