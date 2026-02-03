@@ -39,6 +39,7 @@ interface Resort {
   snow_condition?: string;
   snow_mountain?: string;
   snow_valley?: string;
+  is_cross_country?: boolean;
 }
 
 type LovelaceCardConstructor = new () => LovelaceCard;
@@ -154,7 +155,19 @@ export class BergfexCard extends LitElement implements LovelaceCard {
       deviceEntities.forEach((entity) => {
         const entityId = entity.entity_id;
         if (entityId.endsWith('_operation_status')) resorts[deviceId].operation_status = entityId;
-        else if (entityId.endsWith('_status')) resorts[deviceId].status = entityId;
+        else if (entityId.endsWith('_status')) {
+          resorts[deviceId].status = entityId;
+          // Check if this is a cross-country resort based on the status entity
+          const link = entity.attributes?.link as string | undefined;
+          const icon = entity.attributes?.icon as string | undefined;
+          if (
+            (link && link.includes('/langlaufen/')) ||
+            icon === 'mdi:ski-cross-country' ||
+            icon === 'mdi:ski-cross-country-skating'
+          ) {
+            resorts[deviceId].is_cross_country = true;
+          }
+        }
         if (entityId.endsWith('_snow_valley')) resorts[deviceId].snow_valley = entityId;
         if (entityId.endsWith('_snow_mountain')) resorts[deviceId].snow_mountain = entityId;
         if (entityId.endsWith('_new_snow')) resorts[deviceId].new_snow = entityId;
@@ -385,6 +398,7 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
   private _isCrossCountryResort(resort: Resort): boolean {
     return !!(
+      resort.is_cross_country ||
       resort.classical_trails_open ||
       resort.skating_trails_open ||
       resort.classical_condition ||
