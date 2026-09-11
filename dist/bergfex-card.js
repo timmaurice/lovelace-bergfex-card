@@ -419,7 +419,7 @@ class $t extends wt{}$t.directiveName="unsafeSVG",$t.resultType=2;const bt=mt($t
                               </div>
 
                               <div class="forecast-carousel">
-                                ${(()=>{const s=this._forecastState[t]?.tab||"daily",i="daily"===s?e.forecast_days:e.forecast_summaries,o=this._forecastState[t]?.index||0;if(!i||0===i.length)return W``;const n=i[o],a=this.hass.states[n],r=a?.attributes.entity_picture;let l="";if("daily"===s){const t=n.match(/day_(\d+)/),e=t?parseInt(t[1],10):o;l=this._formatForecastDate(e)}else{const t=n.match(/summary_image_(\d+)h/),e=t?t[1]:"";l=St(this.hass,"component.bergfex-card.card.forecast.hour",{hours:e})}return W`
+                                ${(()=>{const s=this._forecastState[t]?.tab||"daily",i="daily"===s?e.forecast_days:e.forecast_summaries,o=this._forecastState[t]?.index||0;if(!i||0===i.length)return W``;const n=i[o],a=this.hass.states[n],r=a?.attributes.entity_picture;let l;if("daily"===s){const t=n.match(/day_(\d+)/),e=t?parseInt(t[1],10):o;l=this._formatForecastDate(e)}else{const t=n.match(/summary_image_(\d+)h/),e=t?t[1]:"";l=St(this.hass,"component.bergfex-card.card.forecast.hour",{hours:e})}return W`
                                     <div class="forecast-image-container">
                                       ${r?W`<img
                                             src="${r}"
