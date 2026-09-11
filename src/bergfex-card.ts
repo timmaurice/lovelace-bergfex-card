@@ -1231,8 +1231,11 @@ export class BergfexCard extends LitElement implements LovelaceCard {
                                   const currentImageEntity = this.hass.states[currentImageEntityId];
                                   const imageUrl = currentImageEntity?.attributes.entity_picture;
 
-                                  // Extract label based on entity ID or index
-                                  let label = '';
+                                  // Extract label based on entity ID or index. Declared without
+                                  // an initialiser: both branches below assign it, so a starting
+                                  // value would be dead — which ESLint 10's `no-useless-assignment`
+                                  // now flags.
+                                  let label: string;
                                   if (activeTab === 'daily') {
                                     const dayMatch = currentImageEntityId.match(/day_(\d+)/);
                                     const dayOffset = dayMatch ? parseInt(dayMatch[1], 10) : currentIndex;
