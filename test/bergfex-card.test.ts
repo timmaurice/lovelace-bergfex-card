@@ -216,6 +216,15 @@ describe('BergfexCard', () => {
       expect(card?.header).toBe('Ski Resorts');
     });
 
+    it('should point to the integration that now ships the card', async () => {
+      const resort = createMockResort('ischgl', 'Ischgl', { status: 'Open' });
+      await setupCard({}, resort);
+
+      const alert = element.shadowRoot?.querySelector('ha-card > ha-alert.deprecated');
+      expect(alert?.getAttribute('alert-type')).toBe('warning');
+      expect(alert?.textContent?.trim()).toBe('Deprecated');
+    });
+
     it('should render resort details correctly', async () => {
       const resortData = {
         status: 'Open' as const,

@@ -65,7 +65,8 @@
       "open": "Ouvert",
       "closed": "Fermé",
       "unknown": "Inconnu"
-    }
+    },
+    "deprecated": "Cette carte fait désormais partie de l'intégration Bergfex Snow Report (3.0 et versions ultérieures) et ne reçoit plus de mises à jour ici. Mettez à jour l'intégration, puis désinstallez « Bergfex Card » dans HACS."
   },
   "common": {
     "errors": {

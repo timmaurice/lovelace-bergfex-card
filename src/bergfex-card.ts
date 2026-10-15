@@ -476,6 +476,9 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 
     return html`
       <ha-card .header=${this._config.title} tabindex="0">
+        <ha-alert class="deprecated" alert-type="warning"
+          >${localize(this.hass, 'component.bergfex-card.card.deprecated')}</ha-alert
+        >
         <div class="card-content">
           ${resortEntries.map(([resortId, resort]) => {
             const primaryEntity = resort.status;
@@ -1335,11 +1338,15 @@ export class BergfexCard extends LitElement implements LovelaceCard {
 }
 
 if (typeof window !== 'undefined') {
+  console.warn(
+    'Bergfex Card is retired: the card now ships with the Bergfex Snow Report integration (3.0 and later). ' +
+      'Update the integration, then uninstall "Bergfex Card" in HACS. https://github.com/timmaurice/bergfex',
+  );
   window.customCards = window.customCards || [];
   window.customCards.push({
     type: ELEMENT_NAME,
     name: 'Bergfex Card',
-    description: 'A Lovelace card to display ski resort conditions from Bergfex.',
-    documentationURL: 'https://github.com/timmaurice/lovelace-bergfex-card',
+    description: 'Retired: now part of the Bergfex Snow Report integration (3.0 and later).',
+    documentationURL: 'https://github.com/timmaurice/bergfex',
   });
 }

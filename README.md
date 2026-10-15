@@ -7,6 +7,9 @@
 [![GH-code-size](https://img.shields.io/github/languages/code-size/timmaurice/lovelace-bergfex-card.svg?style=flat-square)](https://github.com/timmaurice/lovelace-bergfex-card)
 ![GitHub](https://img.shields.io/github/license/timmaurice/lovelace-bergfex-card?style=flat-square)
 
+> [!IMPORTANT]
+> **This card is retired.** Since version 3.0 it ships with the [Bergfex Snow Report integration](https://github.com/timmaurice/bergfex), which installs and updates it for you. Update the integration to 3.0 or later, then uninstall "Bergfex Card" in HACS, as described in [Migrating from the standalone Bergfex Card](https://github.com/timmaurice/bergfex#migrating-from-the-standalone-bergfex-card). Your dashboards keep working: the card type stays `custom:bergfex-card`. This repository gets no further updates and will be archived. Please open new issues at [timmaurice/bergfex](https://github.com/timmaurice/bergfex/issues).
+
 A custom Lovelace card for Home Assistant to display ski resort and cross-country skiing conditions from the [Bergfex integration](https://github.com/timmaurice/bergfex).
 
 <img src="https://raw.githubusercontent.com/timmaurice/lovelace-bergfex-card/main/image.png" alt="Card Screenshot" />
